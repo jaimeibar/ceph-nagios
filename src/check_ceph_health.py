@@ -31,8 +31,8 @@ STATUS_WARNING = 1
 STATUS_ERROR = 2
 STATUS_UNKNOWN = 3
 
-def main():
 
+def _parse_arguments():
     # parse args
     parser = argparse.ArgumentParser(description="'ceph health' nagios plugin.")
     parser.add_argument('-e', '--exe', help='ceph executable [%s]' % CEPH_COMMAND)
@@ -41,19 +41,20 @@ def main():
     parser.add_argument('-i', '--id', help='ceph client id')
     parser.add_argument('-n', '--name', help='ceph client name')
     parser.add_argument('-k', '--keyring', help='ceph client keyring file')
-    parser.add_argument('-d', '--detail', help="exec 'ceph health detail'", action='store_true')
-    parser.add_argument('-V', '--version', help='show version and exit', action='store_true')
-    args = parser.parse_args()
+    parser.add_argument('-v', '--version', action='version', version=__version__, help='show version and exit')
 
+    ceph = parser.add_mutually_exclusive_group()
+    ceph.add_argument('-s', '--status', action='store_false', help='Show ceph status')
+    ceph.add_argument('--health', action='store_false', help='Show ceph health')
+
+    return parser
+
+"""
     # validate args
     ceph_exec = args.exe if args.exe else CEPH_COMMAND
     if not os.path.exists(ceph_exec):
         print "ERROR: ceph executable '%s' doesn't exist" % ceph_exec
         return STATUS_UNKNOWN
-
-    if args.version:
-        print 'version %s' % __version__
-        return STATUS_OK
 
     if args.conf and not os.path.exists(args.conf):
         print "ERROR: ceph conf file '%s' doesn't exist" % args.conf
@@ -81,18 +82,11 @@ def main():
         ceph_health.append('--keyring')
         ceph_health.append(args.keyring)
     ceph_health.append('health')
-    if args.detail:
-        ceph_health.append('detail')
-
-    #print ceph_health
 
     # exec command
     p = subprocess.Popen(ceph_health, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, err = p.communicate()
 
-    # parse output
-    #print "output:", output
-    #print "err:", err
     if output:
         # merge multi-lines of output in one line
         one_line = output.replace('\n', '; ')
@@ -123,6 +117,15 @@ def main():
             print one_line
 
     return STATUS_UNKNOWN
+"""
+
+def main():
+    parser = _parse_arguments()
+    arguments = parser.parse_args()
+    nargs = len(sys.argv[1:])
+    if not nargs:
+        parser.print_help()
+        return 1
 
 
 if __name__ == "__main__":
