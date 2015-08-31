@@ -39,7 +39,7 @@ def _parse_arguments():
     """
     parser = argparse.ArgumentParser(description="'ceph health' nagios plugin.")
     parser.add_argument('-e', '--exe', help='ceph executable [%s]' % CEPH_COMMAND)
-    parser.add_argument('-c', '--conf', help='alternative ceph conf file')
+    parser.add_argument('-c', '--conf', help='alternative ceph conf file [{0}]'.format(CEPH_CONFIG))
     parser.add_argument('-m', '--monaddress', help='ceph monitor address[:port]')
     parser.add_argument('-i', '--id', help='ceph client id')
     parser.add_argument('-n', '--name', help='ceph client name')
