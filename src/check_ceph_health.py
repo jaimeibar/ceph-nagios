@@ -33,7 +33,9 @@ STATUS_UNKNOWN = 3
 
 
 def _parse_arguments():
-    # parse args
+    """
+    Parse arguments
+    """
     parser = argparse.ArgumentParser(description="'ceph health' nagios plugin.")
     parser.add_argument('-e', '--exe', help='ceph executable [%s]' % CEPH_COMMAND)
     parser.add_argument('-c', '--conf', help='alternative ceph conf file')
@@ -48,6 +50,38 @@ def _parse_arguments():
     ceph.add_argument('--health', action='store_false', help='Show ceph health')
 
     return parser
+
+def compose_command(arguments):
+    """
+    :param arguments: Command line arguments
+    :return: Ceph command
+    """
+    cmd = []
+    cmd.append(CEPH_COMMAND)
+    altexe = arguments.exe if arguments.exe is not None else CEPH_COMMAND
+    check_file_exist(altexe)
+    cmd.append(altexe)
+    altconf = arguments.conf
+    check_file_exist(altconf)
+    cmd.append(altconf)
+    monaddress = arguments.monaddress
+    clientid = arguments.id
+    clientname = arguments.name
+    keyring = arguments.keyring
+
+
+
+def check_file_exist(cfile):
+    """
+    Check if file exists
+    :param cfile
+    :return: True if it exists
+    """
+    if not os.path.exists(cfile):
+        print >> sys.stderr, 'No such file'
+        sys.exit(1)
+    else:
+        return True
 
 """
     # validate args
@@ -122,6 +156,7 @@ def _parse_arguments():
 def main():
     parser = _parse_arguments()
     arguments = parser.parse_args()
+    command = compose_command(arguments)
     nargs = len(sys.argv[1:])
     if not nargs:
         parser.print_help()
