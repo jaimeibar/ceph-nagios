@@ -24,6 +24,7 @@ __version__ = '1.0.1'
 
 # default ceph values
 CEPH_COMMAND = '/usr/bin/ceph'
+CEPH_CONFIG = '/etc/ceph/ceph.conf'
 
 # nagios exit code
 STATUS_OK = 0
@@ -56,20 +57,31 @@ def compose_command(arguments):
     :param arguments: Command line arguments
     :return: Ceph command
     """
-    cmd = []
-    cmd.append(CEPH_COMMAND)
-    altexe = arguments.exe if arguments.exe is not None else CEPH_COMMAND
-    check_file_exist(altexe)
-    cmd.append(altexe)
-    altconf = arguments.conf
-    check_file_exist(altconf)
-    cmd.append(altconf)
+    cmd = list()
+    cephcmd = arguments.exe if arguments.exe is not None else CEPH_COMMAND
+    altconf = arguments.conf if arguments.conf is not None else CEPH_CONFIG
     monaddress = arguments.monaddress
     clientid = arguments.id
     clientname = arguments.name
     keyring = arguments.keyring
-
-
+    if check_file_exist(cephcmd):
+        cmd.append(cephcmd)
+    if check_file_exist(altconf):
+        cmd.append('-c')
+        cmd.append(altconf)
+    if monaddress is not None:
+        cmd.append('-m')
+        cmd.append(monaddress)
+    if clientid is not None:
+        cmd.append('--id')
+        cmd.append(clientid)
+    if clientname is not None:
+        cmd.append('--name')
+        cmd.append(clientname)
+    if keyring is not None:
+        cmd.append('--keyring')
+        cmd.append(keyring)
+    return cmd
 
 def check_file_exist(cfile):
     """
@@ -155,12 +167,15 @@ def check_file_exist(cfile):
 
 def main():
     parser = _parse_arguments()
-    arguments = parser.parse_args()
-    command = compose_command(arguments)
     nargs = len(sys.argv[1:])
     if not nargs:
         parser.print_help()
         return 1
+    arguments = parser.parse_args()
+    command = compose_command(arguments)
+    print command
+
+
 
 
 if __name__ == "__main__":
