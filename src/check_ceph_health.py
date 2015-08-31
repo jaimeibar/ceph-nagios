@@ -15,6 +15,11 @@
 #  limitations under the License.
 #
 
+"""
+Ceph nagios plugins
+"""
+
+
 import argparse
 import os
 import subprocess
@@ -47,8 +52,8 @@ def _parse_arguments():
     parser.add_argument('-v', '--version', action='version', version=__version__, help='show version and exit')
 
     ceph = parser.add_mutually_exclusive_group()
-    ceph.add_argument('-s', '--status', action='store_false', help='Show ceph status')
-    ceph.add_argument('--health', action='store_false', help='Show ceph health')
+    ceph.add_argument('--status', action='store_true', help='Show ceph status')
+    ceph.add_argument('--health', action='store_true', help='Show ceph health')
 
     return parser
 
@@ -64,6 +69,10 @@ def compose_command(arguments):
     clientid = arguments.id
     clientname = arguments.name
     keyring = arguments.keyring
+    status = arguments.status
+    health = arguments.health
+    if not status and not health:
+        return False
     if check_file_exist(cephcmd):
         cmd.append(cephcmd)
     if check_file_exist(altconf):
@@ -81,6 +90,8 @@ def compose_command(arguments):
     if keyring is not None:
         cmd.append('--keyring')
         cmd.append(keyring)
+    extra = 'status' if status else 'health'
+    cmd.append(extra)
     return cmd
 
 def check_file_exist(cfile):
@@ -166,6 +177,9 @@ def check_file_exist(cfile):
 """
 
 def main():
+    """
+    Main function
+    """
     parser = _parse_arguments()
     nargs = len(sys.argv[1:])
     if not nargs:
@@ -173,7 +187,8 @@ def main():
         return 1
     arguments = parser.parse_args()
     command = compose_command(arguments)
-    print command
+    if not command:
+        parser.error('Missing mandatory argument --status or --health')
 
 
 
