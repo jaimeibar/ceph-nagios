@@ -60,7 +60,7 @@ def _parse_arguments():
 def compose_command(arguments):
     """
     :param arguments: Command line arguments
-    :return: Ceph command
+    :return: Ceph command or False in case of missing params
     """
     cmd = list()
     cephcmd = arguments.exe if arguments.exe is not None else CEPH_COMMAND
@@ -98,11 +98,11 @@ def check_file_exist(cfile):
     """
     Check if file exists
     :param cfile
-    :return: True if it exists
+    :return: True if it exists STATUS_ERROR otherwise
     """
     if not os.path.exists(cfile):
         print >> sys.stderr, 'No such file'
-        sys.exit(1)
+        return STATUS_ERROR
     else:
         return True
 
@@ -184,7 +184,7 @@ def main():
     nargs = len(sys.argv[1:])
     if not nargs:
         parser.print_help()
-        return 1
+        return STATUS_ERROR
     arguments = parser.parse_args()
     command = compose_command(arguments)
     if not command:
