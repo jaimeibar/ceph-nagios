@@ -19,13 +19,13 @@
 Ceph nagios plugins
 """
 
-
+from __future__ import print_function
 import argparse
 import os
 import subprocess
 import sys
 
-__version__ = '1.0.1'
+__version__ = '0.1'
 
 # default ceph values
 CEPH_COMMAND = '/usr/bin/ceph'
@@ -41,6 +41,7 @@ STATUS_UNKNOWN = 3
 def _parse_arguments():
     """
     Parse arguments
+    :return: Command line arguments
     """
     parser = argparse.ArgumentParser(description="'ceph health' nagios plugin.")
     parser.add_argument('-e', '--exe', help='ceph executable [%s]' % CEPH_COMMAND)
@@ -101,66 +102,35 @@ def check_file_exist(cfile):
     :return: True if it exists STATUS_ERROR otherwise
     """
     if not os.path.exists(cfile):
-        print >> sys.stderr, 'No such file {0}'.format(cfile)
+        print('No such file {0}'.format(cfile), file=sys.stderr)
         return STATUS_ERROR
     else:
         return True
 
-"""
-    # build command
-    ceph_health = [ceph_exec]
-    if args.monaddress:
-        ceph_health.append('-m')
-        ceph_health.append(args.monaddress)
-    if args.conf:
-        ceph_health.append('-c')
-        ceph_health.append(args.conf)
-    if args.id:
-        ceph_health.append('--id')
-        ceph_health.append(args.id)
-    if args.name:
-        ceph_health.append('--name')
-        ceph_health.append(args.name)
-    if args.keyring:
-        ceph_health.append('--keyring')
-        ceph_health.append(args.keyring)
-    ceph_health.append('health')
-
-    # exec command
-    p = subprocess.Popen(ceph_health, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    output, err = p.communicate()
-
+def do_ceph_command(command):
+    """
+    Run ceph command
+    :param command Ceph command
+    :return: Ceph command output
+    """
+    docmd = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+    output, err = docmd.communicate()
     if output:
-        # merge multi-lines of output in one line
-        one_line = output.replace('\n', '; ')
-        if one_line.startswith('HEALTH_OK'):
-            #print 'HEALTH OK:', one_line[len('HEALTH_OK')+1:]
-            one_line = one_line[len('HEALTH_OK') + 1:].strip()
-            if one_line:
-                print 'HEALTH OK:', one_line
-            else:
-                print 'HEALTH OK'
+        if output.find('HEALTH_OK') != -1:
+            print('HEALTH_OK: {0}'.format(output.strip()))
             return STATUS_OK
-        elif one_line.startswith('HEALTH_WARN'):
-            print 'HEALTH WARNING:', one_line[len('HEALTH_WARN') + 1:]
+        elif output.find('HEALTH_WARN') != -1:
+            print('HEALTH_WARN: {0}'.format(output.strip()))
             return STATUS_WARNING
-        elif one_line.startswith('HEALTH_ERR'):
-            print 'HEALTH ERROR:', one_line[len('HEALTH_ERR') + 1:]
+        elif output.find('HEALTH_ERR') != -1:
+            print('HEALTH_ERROR: {0}'.format(output.strip()))
             return STATUS_ERROR
         else:
-            print one_line
-
+            print('UNKNOWN: {0}'.format(output.strip()))
+            return STATUS_UNKNOWN
     elif err:
-        # read only first line of error
-        one_line = err.split('\n')[0]
-        if '-1 ' in one_line:
-            idx = one_line.rfind('-1 ')
-            print 'ERROR: %s: %s' % (ceph_exec, one_line[idx + len('-1 '):])
-        else:
-            print one_line
-
-    return STATUS_UNKNOWN
-"""
+        print('ERROR: {0}'.format(err.strip()), file=sys.stderr)
+        return STATUS_ERROR
 
 def main():
     """
@@ -175,8 +145,8 @@ def main():
     command = compose_command(arguments)
     if not command:
         parser.error('Missing mandatory argument --status or --health')
-
-
+    result = do_ceph_command(command)
+    return result
 
 
 if __name__ == "__main__":
