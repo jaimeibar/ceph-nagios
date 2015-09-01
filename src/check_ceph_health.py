@@ -40,7 +40,7 @@ STATUS_UNKNOWN = 3
 
 def _parse_arguments():
     """
-    Parse arguments
+    Parse command line arguments
     :return: Command line arguments
     """
     parser = argparse.ArgumentParser(description="'ceph health' nagios plugin.")
@@ -60,6 +60,7 @@ def _parse_arguments():
 
 def compose_command(arguments):
     """
+	Compose ceph command from command line arguments
     :param arguments: Command line arguments
     :return: Ceph command or False in case of missing params
     """
@@ -98,8 +99,8 @@ def compose_command(arguments):
 def check_file_exist(cfile):
     """
     Check if file exists
-    :param cfile
-    :return: True if it exists STATUS_ERROR otherwise
+    :param cfile: Configuration file
+    :return: True if exists STATUS_ERROR otherwise
     """
     if not os.path.exists(cfile):
         print('No such file {0}'.format(cfile), file=sys.stderr)
@@ -110,7 +111,7 @@ def check_file_exist(cfile):
 def do_ceph_command(command):
     """
     Run ceph command
-    :param command Ceph command
+    :param command: Ceph command
     :return: Ceph command output
     """
     docmd = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
