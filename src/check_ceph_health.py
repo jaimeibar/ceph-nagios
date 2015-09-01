@@ -87,7 +87,7 @@ def compose_command(arguments):
     if clientname is not None:
         cmd.append('--name')
         cmd.append(clientname)
-    if keyring is not None:
+    if keyring is not None and check_file_exist(keyring):
         cmd.append('--keyring')
         cmd.append(keyring)
     extra = 'status' if status else 'health'
@@ -101,26 +101,12 @@ def check_file_exist(cfile):
     :return: True if it exists STATUS_ERROR otherwise
     """
     if not os.path.exists(cfile):
-        print >> sys.stderr, 'No such file'
+        print >> sys.stderr, 'No such file {0}'.format(cfile)
         return STATUS_ERROR
     else:
         return True
 
 """
-    # validate args
-    ceph_exec = args.exe if args.exe else CEPH_COMMAND
-    if not os.path.exists(ceph_exec):
-        print "ERROR: ceph executable '%s' doesn't exist" % ceph_exec
-        return STATUS_UNKNOWN
-
-    if args.conf and not os.path.exists(args.conf):
-        print "ERROR: ceph conf file '%s' doesn't exist" % args.conf
-        return STATUS_UNKNOWN
-
-    if args.keyring and not os.path.exists(args.keyring):
-        print "ERROR: keyring file '%s' doesn't exist" % args.keyring
-        return STATUS_UNKNOWN
-
     # build command
     ceph_health = [ceph_exec]
     if args.monaddress:
