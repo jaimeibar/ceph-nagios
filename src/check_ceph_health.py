@@ -166,7 +166,7 @@ class CephCommandBase(object):
         return self._name
 
     @name.setter
-    def keyring(self, newname):
+    def name(self, newname):
         self._name = newname
 
     @property
