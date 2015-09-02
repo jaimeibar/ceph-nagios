@@ -152,5 +152,57 @@ def main():
     return result
 
 
+class CephBase(object):
+
+    def __init__(self, altcephexec=None, altcephconf=None, monaddress=None, monid=None, keyring=None):
+        self._altcephexec = altcephexec
+        self._altcephconf = altcephconf
+        self._monaddress = monaddress
+        self._monid = monid
+        self._keyring = keyring
+
+    @property
+    def altcephexec(self):
+        return self._altcephexec or CEPH_COMMAND
+
+    @property.setter
+    def altcephexec(self, newcephcmd):
+        self._altcephexec = newcephcmd
+
+    @property
+    def altcephconf(self):
+        return self._altcephconf or CEPH_CONFIG
+
+    @property.setter
+    def altcephconf(self, newcephconfig):
+        self._altcephexec = newcephconfig
+
+    @property
+    def monaddress(self):
+        return self._monaddress
+
+    @property.setter
+    def monaddress(self, newmonaddress):
+        self._monaddress = newmonaddress
+
+    @property
+    def keyring(self):
+        return self._keyring
+
+    @property.setter
+    def keyring(self, newkeyring):
+        self._keyring = newkeyring
+
+
+class BasicCephCommand(CephBase):
+
+    def __init__(self, altcephexec, altcephconf, monaddress, monid, keyring, cmd):
+        self.cmd = cmd
+        super(BasicCephCommand, self).__init__(altcephexec, altcephconf, monaddress, monid, keyring)
+
+
+
+
+
 if __name__ == "__main__":
     sys.exit(main())
