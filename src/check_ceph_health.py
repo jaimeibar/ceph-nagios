@@ -79,44 +79,6 @@ def _parse_arguments():
 
     return parser
 
-def compose_command(arguments):
-    """
-    Compose ceph command from command line arguments
-    :param arguments: Command line arguments
-    :return: Ceph command or False in case of missing params
-    """
-    cmd = list()
-    cephcmd = arguments.exe if arguments.exe is not None else CEPH_COMMAND
-    altconf = arguments.conf if arguments.conf is not None else CEPH_CONFIG
-    monaddress = arguments.monaddress
-    clientid = arguments.id
-    clientname = arguments.name
-    keyring = arguments.keyring
-    status = arguments.status
-    health = arguments.health
-    if not status and not health:
-        return False
-    if check_file_exist(cephcmd):
-        cmd.append(cephcmd)
-    if check_file_exist(altconf):
-        cmd.append('-c')
-        cmd.append(altconf)
-    if monaddress is not None:
-        cmd.append('-m')
-        cmd.append(monaddress)
-    if clientid is not None:
-        cmd.append('--id')
-        cmd.append(clientid)
-    if clientname is not None:
-        cmd.append('--name')
-        cmd.append(clientname)
-    if keyring is not None and check_file_exist(keyring):
-        cmd.append('--keyring')
-        cmd.append(keyring)
-    extra = 'status' if status else 'health'
-    cmd.append(extra)
-    return cmd
-
 def check_file_exist(cfile):
     """
     Check if file exists
@@ -155,14 +117,16 @@ def do_ceph_command(command):
         return STATUS_ERROR
 
 
-class CephBase(object):
-
-    def __init__(self, altcephexec=None, altcephconf=None, monaddress=None, monid=None, keyring=None):
-        self._altcephexec = altcephexec
-        self._altcephconf = altcephconf
-        self._monaddress = monaddress
-        self._monid = monid
-        self._keyring = keyring
+class CephCommandBase(object):
+    """
+    Base class
+    """
+    def __init__(self, **kwargs):
+        self._altcephexec = kwargs.get('altcephexec')
+        self._altcephconf = kwargs.get('altcephconf')
+        self._monaddress = kwargs.get('monaddress')
+        self._monid = kwargs.get('monid')
+        self._keyring = kwargs.get('keyring')
 
     @property
     def altcephexec(self):
@@ -197,11 +161,80 @@ class CephBase(object):
         self._keyring = newkeyring
 
 
-class BasicCephCommand(CephBase):
+class CommonCephCommand(CephCommandBase):
 
-    def __init__(self, altcephexec, altcephconf, monaddress, monid, keyring, cmd):
-        self.cmd = cmd
-        super(BasicCephCommand, self).__init__(altcephexec, altcephconf, monaddress, monid, keyring)
+    def __init__(self, cmd, **kwargs):
+        self._cmd = cmd
+		self._status = kwargs.get('status')
+		self._health = kwargs.get('health')
+		self._quorum = kwargs.get('quorum')
+		self._df = kwargs.get('df')
+        super(BasicCephCommand, self).__init__(**kwargs)
+
+
+class MonCephCommand(CephCommandBase):
+
+	def __init__(self, cmd, **kwargs):
+        self._cmd = cmd
+		self._mon = kwargs.get('mon')
+		self._monstat = kwargs.get('monstat')
+        super(BasicCephCommand, self).__init__(**kwargs)
+
+
+class OsdCephCommand(CephCommandBase):
+
+	def __init__(self, cmd, **kwargs):
+        self._cmd = cmd
+		self._osdstat = kwargs.get('osdstat')
+		self._osdtree = kwargs.get('osdtree')
+        super(BasicCephCommand, self).__init__(**kwargs)
+
+
+class MdsCephCommand(CephCommandBase):
+
+	def __init__(self, cmd, **kwargs):
+        self._cmd = cmd
+		self._mdsstat = kwargs.get('mdsstat')
+        super(BasicCephCommand, self).__init__(**kwargs)
+
+def compose_command(arguments):
+    """
+    Compose ceph command from command line arguments
+    :param arguments: Command line arguments
+    :return: Ceph command or False in case of missing params
+    """
+    cmd = list()
+    cephcmd = arguments.exe if arguments.exe is not None else CEPH_COMMAND
+    altconf = arguments.conf if arguments.conf is not None else CEPH_CONFIG
+    monaddress = arguments.monaddress
+    clientid = arguments.id
+    clientname = arguments.name
+    keyring = arguments.keyring
+    status = arguments.status
+    health = arguments.health
+    if not status and not health:
+        return False
+    if check_file_exist(cephcmd):
+        cmd.append(cephcmd)
+    if check_file_exist(altconf):
+        cmd.append('-c')
+        cmd.append(altconf)
+    if monaddress is not None:
+        cmd.append('-m')
+        cmd.append(monaddress)
+    if clientid is not None:
+        cmd.append('--id')
+        cmd.append(clientid)
+    if clientname is not None:
+        cmd.append('--name')
+        cmd.append(clientname)
+    if keyring is not None and check_file_exist(keyring):
+        cmd.append('--keyring')
+        cmd.append(keyring)
+    extra = 'status' if status else 'health'
+    cmd.append(extra)
+    return cmd
+
 
 
 def main():
@@ -214,13 +247,21 @@ def main():
         parser.print_help()
         return STATUS_ERROR
     arguments = parser.parse_args()
-    """
-    command = compose_command(arguments)
-    if not command:
-        parser.error('Missing mandatory argument --status or --health')
-    result = do_ceph_command(command)
-    return result
-    """
+    if hasattr(arguments, 'common'):
+		cmd = CommonCephCommand(cmd, **kwargs)
+	elif hasattr(arguments, 'mon'):
+		pass
+	elif hasattr(arguments, 'osd'):
+		pass
+	elif hasattr(arguments, 'mds'):
+		pass
+	else:
+		pass
+    # command = compose_command(arguments)
+    # if not command:
+        # parser.error('Missing mandatory argument --status or --health')
+    # result = do_ceph_command(command)
+    # return result
 
 
 if __name__ == "__main__":
