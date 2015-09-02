@@ -122,28 +122,28 @@ class CephCommandBase(object):
     Base class
     """
     def __init__(self, cliargs):
-        self._altcephexec = getattr(cliargs, 'exe')
-        self._altcephconf = getattr(cliargs, 'conf')
+        self._cephexec = getattr(cliargs, 'exe')
+        self._cephconf = getattr(cliargs, 'conf')
         self._monaddress = getattr(cliargs, 'monaddress')
         self._monid = getattr(cliargs, 'monid')
         self._name = getattr(cliargs, 'name')
         self._keyring = getattr(cliargs, 'keyring')
 
     @property
-    def altcephexec(self):
-        return self._altcephexec or CEPH_COMMAND
+    def cephexec(self):
+        return self._cephexec or CEPH_COMMAND
 
-    @altcephexec.setter
-    def altcephexec(self, newcephcmd):
-        self._altcephexec = newcephcmd
+    @cephexec.setter
+    def cephexec(self, newcephexec):
+        self._cephexec = newcephexec
 
     @property
-    def altcephconf(self):
-        return self._altcephconf or CEPH_CONFIG
+    def cephconf(self):
+        return self._cephconf or CEPH_CONFIG
 
-    @altcephconf.setter
-    def altcephconf(self, newcephconfig):
-        self._altcephexec = newcephconfig
+    @cephconf.setter
+    def cephconf(self, newcephconf):
+        self._cephconf = newcephconf
 
     @property
     def monaddress(self):
@@ -162,6 +162,14 @@ class CephCommandBase(object):
         self._monid = newmonid
 
     @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def keyring(self, newname):
+        self._name = newname
+
+    @property
     def keyring(self):
         return self._keyring
 
@@ -169,11 +177,14 @@ class CephCommandBase(object):
     def keyring(self, newkeyring):
         self._keyring = newkeyring
 
+    def build_command(self):
+        cmd = list()
+        cmd.append(self.cephexec)
+
 
 class CommonCephCommand(CephCommandBase):
 
     def __init__(self, cliargs):
-        # self._cmd = cmd
         self._status = getattr(cliargs, 'status')
         self._health = getattr(cliargs, 'health')
         self._quorum = getattr(cliargs, 'quorum')
