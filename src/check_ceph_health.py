@@ -177,10 +177,29 @@ class CephCommandBase(object):
     def keyring(self, newkeyring):
         self._keyring = newkeyring
 
-    def build_command(self):
-        cmd = list()
-        cmd.append(self.cephexec)
-
+    def build_base_command(self):
+        """
+        Build base ceph command from command line arguments
+        :return: Ceph command
+        """
+        basecmd = list()
+        basecmd.append(self.cephexec)
+        if self.cephconf is not None:
+            basecmd.append('-c')
+            basecmd.append(self.cephconf)
+        if self.monaddress is not None:
+            basecmd.append('-m')
+            basecmd.append(self.monaddress)
+        if self.monid is not None:
+            basecmd.append('--id')
+            basecmd.append(self.monid)
+        if self.name is not None:
+            basecmd.append('--name')
+            basecmd.append(self.name)
+        if self.keyring is not None:
+            basecmd.append('--keyring')
+            basecmd.append(self.keyring)
+        return basecmd
 
 class CommonCephCommand(CephCommandBase):
 
@@ -195,8 +214,33 @@ class CommonCephCommand(CephCommandBase):
     def status(self):
         return self._status
 
+    @property
+    def health(self):
+        return self._health
+
+    @property
+    def quorum(self):
+        return self._quorum
+
+    @property
+    def dfcmd(self):
+        return self._df
+
+    def build_common_command(self):
+        cmd = self.build_base_command()
+        print(self.status)
+        if self.status:
+            cmd.append('status')
+        elif self.health:
+            cmd.append('health')
+        elif self.quorum:
+            cmd.append('quorum_status')
+        else:
+            cmd.append('df')
+        return cmd
+
     def __str__(self):
-        return '{0}'.format(self.status)
+        return '{0}'.format(self.build_common_command())
 
 
 class MonCephCommand(CephCommandBase):
@@ -276,9 +320,7 @@ def main():
     arguments = parser.parse_args()
     if hasattr(arguments, 'status'):
         # Common command
-        print(arguments)
         ccmd = CommonCephCommand(arguments)
-        print(ccmd.keyring)
     elif hasattr(arguments, 'mon'):
         pass
     elif hasattr(arguments, 'osdstat'):
