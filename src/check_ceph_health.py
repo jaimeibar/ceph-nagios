@@ -58,7 +58,18 @@ def _parse_arguments():
     ceph.add_argument('--status', action='store_true', help='Show ceph status')
     ceph.add_argument('--health', action='store_true', help='Show ceph health')
     ceph.add_argument('--quorum', action='store_true', help='Show ceph quorum')
-    ceph.add_argument('--mon', action='store_true', help='Show ceph mon status')
+    ceph.add_argument('--df', action='store_true', help='Show ceph pools status')
+
+    cephmon = parser.add_argument_group('Ceph monitor')
+    cephmon.add_argument('--mon', action='store_true', help='Show ceph mon status')
+    cephmon.add_argument('--monstat', action='store_true', help='Show Ceph mon stat')
+
+    cephosd = parser.add_argument_group('Ceph osd')
+    cephosd.add_argument('--osdstat', action='store_true', help='Show ceph osd status')
+    cephosd.add_argument('--osdtree', action='store_true', help='Show Ceph osd tree')
+
+    cephmds = parser.add_argument_group('Ceph mds')
+    cephmds.add_argument('--mdsstat', action='store_true', help='Show ceph mds status')
 
     return parser
 
@@ -137,22 +148,6 @@ def do_ceph_command(command):
         print('ERROR: {0}'.format(err.strip()), file=sys.stderr)
         return STATUS_ERROR
 
-def main():
-    """
-    Main function
-    """
-    parser = _parse_arguments()
-    nargs = len(sys.argv[1:])
-    if not nargs:
-        parser.print_help()
-        return STATUS_ERROR
-    arguments = parser.parse_args()
-    command = compose_command(arguments)
-    if not command:
-        parser.error('Missing mandatory argument --status or --health')
-    result = do_ceph_command(command)
-    return result
-
 
 class CephBase(object):
 
@@ -167,7 +162,7 @@ class CephBase(object):
     def altcephexec(self):
         return self._altcephexec or CEPH_COMMAND
 
-    @property.setter
+    @altcephexec.setter
     def altcephexec(self, newcephcmd):
         self._altcephexec = newcephcmd
 
@@ -175,7 +170,7 @@ class CephBase(object):
     def altcephconf(self):
         return self._altcephconf or CEPH_CONFIG
 
-    @property.setter
+    @altcephconf.setter
     def altcephconf(self, newcephconfig):
         self._altcephexec = newcephconfig
 
@@ -183,7 +178,7 @@ class CephBase(object):
     def monaddress(self):
         return self._monaddress
 
-    @property.setter
+    @monaddress.setter
     def monaddress(self, newmonaddress):
         self._monaddress = newmonaddress
 
@@ -191,7 +186,7 @@ class CephBase(object):
     def keyring(self):
         return self._keyring
 
-    @property.setter
+    @keyring.setter
     def keyring(self, newkeyring):
         self._keyring = newkeyring
 
@@ -203,7 +198,23 @@ class BasicCephCommand(CephBase):
         super(BasicCephCommand, self).__init__(altcephexec, altcephconf, monaddress, monid, keyring)
 
 
-
+def main():
+    """
+    Main function
+    """
+    parser = _parse_arguments()
+    """
+    nargs = len(sys.argv[1:])
+    if not nargs:
+        parser.print_help()
+        return STATUS_ERROR
+    arguments = parser.parse_args()
+    command = compose_command(arguments)
+    if not command:
+        parser.error('Missing mandatory argument --status or --health')
+    result = do_ceph_command(command)
+    return result
+    """
 
 
 if __name__ == "__main__":
