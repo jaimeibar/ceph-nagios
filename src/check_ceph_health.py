@@ -54,22 +54,28 @@ def _parse_arguments():
     parser.add_argument('-k', '--keyring', help='ceph client keyring file')
     parser.add_argument('-v', '--version', action='version', version=__version__, help='show version and exit')
 
-    ceph = parser.add_mutually_exclusive_group()
-    ceph.add_argument('--status', action='store_true', help='Show ceph status')
-    ceph.add_argument('--health', action='store_true', help='Show ceph health')
-    ceph.add_argument('--quorum', action='store_true', help='Show ceph quorum')
-    ceph.add_argument('--df', action='store_true', help='Show ceph pools status')
+    subparsers = parser.add_subparsers(help='Ceph commands options help')
 
-    cephmon = parser.add_argument_group('Ceph monitor')
-    cephmon.add_argument('--mon', action='store_true', help='Show ceph mon status')
-    cephmon.add_argument('--monstat', action='store_true', help='Show Ceph mon stat')
+    cephcommonparser = subparsers.add_parser('common', help='Ceph common options')
+    cephcommonparsergrp = cephcommonparser.add_mutually_exclusive_group()
+    cephcommonparsergrp.add_argument('--status', action='store_true', help='Show ceph status')
+    cephcommonparsergrp.add_argument('--health', action='store_true', help='Show ceph health')
+    cephcommonparsergrp.add_argument('--quorum', action='store_true', help='Show ceph quorum')
+    cephcommonparsergrp.add_argument('--df', action='store_true', help='Show ceph pools status')
 
-    cephosd = parser.add_argument_group('Ceph osd')
-    cephosd.add_argument('--osdstat', action='store_true', help='Show ceph osd status')
-    cephosd.add_argument('--osdtree', action='store_true', help='Show Ceph osd tree')
+    cephmonparser = subparsers.add_parser('mon', help='Ceph monitor options')
+    cephmonparsergrp = cephmonparser.add_mutually_exclusive_group()
+    cephmonparsergrp.add_argument('--mon', action='store_true', help='Show ceph mon status')
+    cephmonparsergrp.add_argument('--monstat', action='store_true', help='Show Ceph mon stat')
 
-    cephmds = parser.add_argument_group('Ceph mds')
-    cephmds.add_argument('--mdsstat', action='store_true', help='Show ceph mds status')
+    cephosdparser = subparsers.add_parser('osd', help='Ceph osd options')
+    cephosdparsergrp = cephosdparser.add_mutually_exclusive_group()
+    cephosdparsergrp.add_argument('--osdstat', action='store_true', help='Show ceph osd status')
+    cephosdparsergrp.add_argument('--osdtree', action='store_true', help='Show Ceph osd tree')
+
+    cephmdsparser = subparsers.add_parser('mds', help='Ceph mds options')
+    cephmdsparsergrp = cephmdsparser.add_mutually_exclusive_group()
+    cephmdsparsergrp.add_argument('--mdsstat', action='store_true', help='Show ceph mds status')
 
     return parser
 
@@ -203,12 +209,12 @@ def main():
     Main function
     """
     parser = _parse_arguments()
-    """
     nargs = len(sys.argv[1:])
     if not nargs:
         parser.print_help()
         return STATUS_ERROR
     arguments = parser.parse_args()
+    """
     command = compose_command(arguments)
     if not command:
         parser.error('Missing mandatory argument --status or --health')
