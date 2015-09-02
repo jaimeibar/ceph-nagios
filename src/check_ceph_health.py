@@ -79,6 +79,7 @@ def _parse_arguments():
 
     return parser
 
+
 def check_file_exist(cfile):
     """
     Check if file exists
@@ -90,6 +91,7 @@ def check_file_exist(cfile):
         return STATUS_ERROR
     else:
         return True
+
 
 def do_ceph_command(command):
     """
@@ -201,6 +203,7 @@ class CephCommandBase(object):
             basecmd.append(self.keyring)
         return basecmd
 
+
 class CommonCephCommand(CephCommandBase):
 
     def __init__(self, cliargs):
@@ -268,6 +271,7 @@ class MdsCephCommand(CephCommandBase):
         self._mdsstat = kwargs.get('mdsstat')
         super(MdsCephCommand, self).__init__(**kwargs)
 
+
 def compose_command(arguments):
     """
     Compose ceph command from command line arguments
@@ -305,7 +309,6 @@ def compose_command(arguments):
     extra = 'status' if status else 'health'
     cmd.append(extra)
     return cmd
-
 
 
 def main():
