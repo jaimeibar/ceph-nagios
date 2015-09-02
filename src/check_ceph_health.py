@@ -58,6 +58,7 @@ def _parse_arguments():
     ceph.add_argument('--status', action='store_true', help='Show ceph status')
     ceph.add_argument('--health', action='store_true', help='Show ceph health')
     ceph.add_argument('--quorum', action='store_true', help='Show ceph quorum')
+    ceph.add_argument('--mon', action='store_true', help='Show ceph mon status')
 
     return parser
 
