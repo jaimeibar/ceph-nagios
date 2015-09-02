@@ -133,50 +133,99 @@ class CephCommandBase(object):
 
     @property
     def cephexec(self):
+        """
+        Get ceph executable
+        :return: ceph executable
+        """
         return self._cephexec or CEPH_COMMAND
 
     @cephexec.setter
     def cephexec(self, newcephexec):
+        """
+        Set new ceph executable
+        :param newcephexec: New ceph executable
+        """
         self._cephexec = newcephexec
 
     @property
     def cephconf(self):
+        """
+        Get ceph config file
+        :return: ceph config file
+        """
         return self._cephconf or CEPH_CONFIG
 
     @cephconf.setter
     def cephconf(self, newcephconf):
+        """
+        Set new ceph config file
+        :param newcephconf: New ceph config file
+        """
         self._cephconf = newcephconf
 
     @property
     def monaddress(self):
+        """
+        Get mon address
+        :return: mon address
+        """
         return self._monaddress
 
     @monaddress.setter
     def monaddress(self, newmonaddress):
+        """
+        Set new mon address
+        :param newmonaddress: New mon address
+        """
         self._monaddress = newmonaddress
 
     @property
     def monid(self):
+        """
+        Get mon id
+        :return: Mon id
+        """
         return self._monid
 
     @monid.setter
     def monid(self, newmonid):
+        """
+        Set new mon id
+        :param newmonid: New mon id
+        """
         self._monid = newmonid
 
     @property
     def name(self):
+        """
+        Get name
+        :return: New name
+        """
+        # TODO-jim: Improve this doc
         return self._name
 
     @name.setter
     def name(self, newname):
+        """
+        Set new name
+        :param newname: New name
+        """
         self._name = newname
 
     @property
     def keyring(self):
+        """
+        Get keyring
+        :return: Keyring
+        """
         return self._keyring
 
     @keyring.setter
     def keyring(self, newkeyring):
+        """
+        Set new keyring
+        :param newkeyring: New keyring
+        """
         self._keyring = newkeyring
 
     def build_base_command(self):
@@ -231,7 +280,6 @@ class CommonCephCommand(CephCommandBase):
 
     def build_common_command(self):
         cmd = self.build_base_command()
-        print(self.status)
         if self.status:
             cmd.append('status')
         elif self.health:
