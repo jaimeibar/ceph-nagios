@@ -49,7 +49,7 @@ def _parse_arguments():
     parser.add_argument('-e', '--exe', help='ceph executable [%s]' % CEPH_COMMAND)
     parser.add_argument('-c', '--conf', help='alternative ceph conf file [{0}]'.format(CEPH_CONFIG))
     parser.add_argument('-m', '--monaddress', help='ceph monitor address[:port]')
-    parser.add_argument('-i', '--id', help='ceph client id')
+    parser.add_argument('-i', '--monid', help='ceph client id')
     parser.add_argument('-n', '--name', help='ceph client name')
     parser.add_argument('-k', '--keyring', help='ceph client keyring file')
     parser.add_argument('-v', '--version', action='version', version=__version__, help='show version and exit')
@@ -121,12 +121,13 @@ class CephCommandBase(object):
     """
     Base class
     """
-    def __init__(self, **kwargs):
-        self._altcephexec = kwargs.get('altcephexec')
-        self._altcephconf = kwargs.get('altcephconf')
-        self._monaddress = kwargs.get('monaddress')
-        self._monid = kwargs.get('monid')
-        self._keyring = kwargs.get('keyring')
+    def __init__(self, cliargs):
+        self._altcephexec = getattr(cliargs, 'exe')
+        self._altcephconf = getattr(cliargs, 'conf')
+        self._monaddress = getattr(cliargs, 'monaddress')
+        self._monid = getattr(cliargs, 'monid')
+        self._name = getattr(cliargs, 'name')
+        self._keyring = getattr(cliargs, 'keyring')
 
     @property
     def altcephexec(self):
@@ -153,6 +154,14 @@ class CephCommandBase(object):
         self._monaddress = newmonaddress
 
     @property
+    def monid(self):
+        return self._monid
+
+    @monid.setter
+    def monid(self, newmonid):
+        self._monid = newmonid
+
+    @property
     def keyring(self):
         return self._keyring
 
@@ -163,39 +172,46 @@ class CephCommandBase(object):
 
 class CommonCephCommand(CephCommandBase):
 
-    def __init__(self, cmd, **kwargs):
-        self._cmd = cmd
-		self._status = kwargs.get('status')
-		self._health = kwargs.get('health')
-		self._quorum = kwargs.get('quorum')
-		self._df = kwargs.get('df')
-        super(BasicCephCommand, self).__init__(**kwargs)
+    def __init__(self, cliargs):
+        # self._cmd = cmd
+        self._status = getattr(cliargs, 'status')
+        self._health = getattr(cliargs, 'health')
+        self._quorum = getattr(cliargs, 'quorum')
+        self._df = getattr(cliargs, 'df')
+        super(CommonCephCommand, self).__init__(cliargs)
+
+    @property
+    def status(self):
+        return self._status
+
+    def __str__(self):
+        return '{0}'.format(self.status)
 
 
 class MonCephCommand(CephCommandBase):
 
-	def __init__(self, cmd, **kwargs):
+    def __init__(self, cmd, **kwargs):
         self._cmd = cmd
-		self._mon = kwargs.get('mon')
-		self._monstat = kwargs.get('monstat')
-        super(BasicCephCommand, self).__init__(**kwargs)
+        self._mon = kwargs.get('mon')
+        self._monstat = kwargs.get('monstat')
+        super(MonCephCommand, self).__init__(**kwargs)
 
 
 class OsdCephCommand(CephCommandBase):
 
-	def __init__(self, cmd, **kwargs):
+    def __init__(self, cmd, **kwargs):
         self._cmd = cmd
-		self._osdstat = kwargs.get('osdstat')
-		self._osdtree = kwargs.get('osdtree')
-        super(BasicCephCommand, self).__init__(**kwargs)
+        self._osdstat = kwargs.get('osdstat')
+        self._osdtree = kwargs.get('osdtree')
+        super(OsdCephCommand, self).__init__(**kwargs)
 
 
 class MdsCephCommand(CephCommandBase):
 
-	def __init__(self, cmd, **kwargs):
+    def __init__(self, cmd, **kwargs):
         self._cmd = cmd
-		self._mdsstat = kwargs.get('mdsstat')
-        super(BasicCephCommand, self).__init__(**kwargs)
+        self._mdsstat = kwargs.get('mdsstat')
+        super(MdsCephCommand, self).__init__(**kwargs)
 
 def compose_command(arguments):
     """
@@ -247,16 +263,19 @@ def main():
         parser.print_help()
         return STATUS_ERROR
     arguments = parser.parse_args()
-    if hasattr(arguments, 'common'):
-		cmd = CommonCephCommand(cmd, **kwargs)
-	elif hasattr(arguments, 'mon'):
-		pass
-	elif hasattr(arguments, 'osd'):
-		pass
-	elif hasattr(arguments, 'mds'):
-		pass
-	else:
-		pass
+    if hasattr(arguments, 'status'):
+        # Common command
+        print(arguments)
+        ccmd = CommonCephCommand(arguments)
+        print(ccmd.keyring)
+    elif hasattr(arguments, 'mon'):
+        pass
+    elif hasattr(arguments, 'osdstat'):
+        pass
+    elif hasattr(arguments, 'mdsstat'):
+        pass
+    else:
+        pass
     # command = compose_command(arguments)
     # if not command:
         # parser.error('Missing mandatory argument --status or --health')
