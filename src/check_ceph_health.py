@@ -46,7 +46,7 @@ def _parse_arguments():
     :return: Command line arguments
     """
     parser = argparse.ArgumentParser(description="'ceph health' nagios plugin.")
-    parser.add_argument('-e', '--exe', help='ceph executable [%s]' % CEPH_COMMAND)
+    parser.add_argument('-e', '--exe', help='ceph executable [{0}]'.format(CEPH_COMMAND))
     parser.add_argument('-c', '--conf', help='alternative ceph conf file [{0}]'.format(CEPH_CONFIG))
     parser.add_argument('-m', '--monaddress', help='ceph monitor address[:port]')
     parser.add_argument('-i', '--monid', help='ceph client id')
@@ -230,7 +230,7 @@ class CephCommandBase(object):
 
     def build_base_command(self):
         """
-        Build base ceph command from command line arguments
+        Build base ceph command from common command line arguments
         :return: Ceph command
         """
         basecmd = list()
