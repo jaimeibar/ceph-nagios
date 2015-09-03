@@ -91,6 +91,7 @@ class CephCommandBase(object):
         self._monid = getattr(cliargs, 'monid')
         self._name = getattr(cliargs, 'name')
         self._keyring = getattr(cliargs, 'keyring')
+        self._nagiosmessage = ''
 
     @property
     def cephexec(self):
@@ -189,6 +190,14 @@ class CephCommandBase(object):
         """
         self._keyring = newkeyring
 
+    @property
+    def nagiosmessage(self):
+        return self._nagiosmessage
+
+    @nagiosmessage.setter
+    def nagiosmessage(self, newmessage):
+        self._nagiosmessage = newmessage
+
     def build_base_command(self):
         """
         Build base ceph command from common command line arguments
@@ -227,26 +236,29 @@ class CephCommandBase(object):
             return STATUS_ERROR
         if output:
             if output.find('HEALTH_OK') != -1:
-                print('HEALTH_OK: {0}'.format(output.strip()))
+                self.nagiosmessage = 'HEALTH_OK: {0}'.format(output.strip())
                 nagioscode = STATUS_OK
             elif output.find('HEALTH_WARN') != -1:
-                print('HEALTH_WARN: {0}'.format(output.strip()), file=sys.stderr)
+                self.nagiosmessage = 'HEALTH_WARN: {0}'.format(output.strip())
                 nagioscode = STATUS_WARNING
             elif output.find('HEALTH_ERR') != -1:
-                print('HEALTH_ERROR: {0}'.format(output.strip()), file=sys.stderr)
+                self.nagiosmessage = 'HEALTH_ERROR: {0}'.format(output.strip())
                 nagioscode = STATUS_ERROR
             else:
                 if not os.path.exists(self.cephconf):
-                    print('ERROR: No such file - {0}'.format(self.cephconf), file=sys.stderr)
+                    self.nagiosmessage = 'ERROR: No such file - {0}'.format(self.cephconf)
                     nagioscode = STATUS_ERROR
                 else:
-                    print('UNKNOWN: {0}'.format(output.strip()), file=sys.stderr)
+                    self.nagiosmessage = 'UNKNOWN: {0}'.format(output.strip())
                     nagioscode = STATUS_UNKNOWN
         elif err:
-            print('ERROR: {0}'.format(err.strip()), file=sys.stderr)
+            self.nagiosmessage = 'ERROR: {0}'.format(err.strip())
             nagioscode = STATUS_ERROR
 
         return nagioscode
+
+    def __str__(self):
+        return '{0}'.format(self.nagiosmessage)
 
 
 class CommonCephCommand(CephCommandBase):
@@ -285,9 +297,6 @@ class CommonCephCommand(CephCommandBase):
         else:
             cmd.append('df')
         return cmd
-
-    def __str__(self):
-        return '{0}'.format(self.build_common_command())
 
 
 class MonCephCommand(CephCommandBase):
@@ -339,6 +348,7 @@ def main():
         pass
     else:
         pass
+    print(ccmd)
     return result
 
 
