@@ -244,6 +244,12 @@ class CephCommandBase(object):
             elif output.find('HEALTH_ERR') != -1:
                 self.nagiosmessage = 'HEALTH_ERROR: {0}'.format(output.strip())
                 nagioscode = STATUS_ERROR
+            elif self.quorum:
+                self.nagiosmessage = 'QUORUM INFO: {0}'.format(output.strip())
+                nagioscode = STATUS_OK
+            elif self.dfcmd:
+                self.nagiosmessage = 'POOLS INFO: {0}'.format(output.strip())
+                nagioscode = STATUS_OK
             else:
                 if not os.path.exists(self.cephconf):
                     self.nagiosmessage = 'ERROR: No such file - {0}'.format(self.cephconf)
