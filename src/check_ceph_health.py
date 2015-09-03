@@ -224,7 +224,7 @@ class CephCommandBase(object):
             output, err = runcmd.communicate()
         except OSError as error:
             print('ERROR: {0} - {1}'.format(error.strerror, self.cephexec), file=sys.stderr)
-            nagioscode = STATUS_ERROR
+            return STATUS_ERROR
         if output:
             if output.find('HEALTH_OK') != -1:
                 print('HEALTH_OK: {0}'.format(output.strip()))
@@ -330,7 +330,7 @@ def main():
         # Common command
         ccmd = CommonCephCommand(arguments)
         cephcmd = ccmd.build_common_command()
-        ccmd.run_ceph_command(cephcmd)
+        result = ccmd.run_ceph_command(cephcmd)
     elif hasattr(arguments, 'mon'):
         pass
     elif hasattr(arguments, 'osdstat'):
@@ -339,11 +339,7 @@ def main():
         pass
     else:
         pass
-    # command = compose_command(arguments)
-    # if not command:
-        # parser.error('Missing mandatory argument --status or --health')
-    # result = do_ceph_command(command)
-    # return result
+    return result
 
 
 if __name__ == "__main__":
