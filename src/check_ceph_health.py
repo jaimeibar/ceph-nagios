@@ -80,45 +80,6 @@ def _parse_arguments():
     return parser
 
 
-def check_file_exist(cfile):
-    """
-    Check if file exists
-    :param cfile: Configuration file
-    :return: True if exists STATUS_ERROR otherwise
-    """
-    if not os.path.exists(cfile):
-        print('No such file {0}'.format(cfile), file=sys.stderr)
-        return STATUS_ERROR
-    else:
-        return True
-
-
-def do_ceph_command(command):
-    """
-    Run ceph command
-    :param command: Ceph command
-    :return: Ceph command output
-    """
-    docmd = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
-    output, err = docmd.communicate()
-    if output:
-        if output.find('HEALTH_OK') != -1:
-            print('HEALTH_OK: {0}'.format(output.strip()))
-            return STATUS_OK
-        elif output.find('HEALTH_WARN') != -1:
-            print('HEALTH_WARN: {0}'.format(output.strip()))
-            return STATUS_WARNING
-        elif output.find('HEALTH_ERR') != -1:
-            print('HEALTH_ERROR: {0}'.format(output.strip()))
-            return STATUS_ERROR
-        else:
-            print('UNKNOWN: {0}'.format(output.strip()))
-            return STATUS_UNKNOWN
-    elif err:
-        print('ERROR: {0}'.format(err.strip()), file=sys.stderr)
-        return STATUS_ERROR
-
-
 class CephCommandBase(object):
     """
     Base class
@@ -252,6 +213,39 @@ class CephCommandBase(object):
             basecmd.append(self.keyring)
         return basecmd
 
+    def run_ceph_command(self, command):
+        """
+        Run ceph command
+        :param command: Ceph command
+        :return: Ceph command output
+        """
+        try:
+            runcmd = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+            output, err = runcmd.communicate()
+        except OSError as error:
+            print('ERROR: {0} - {1}'.format(error.strerror, self.cephexec), file=sys.stderr)
+            return STATUS_ERROR
+        if output:
+            if output.find('HEALTH_OK') != -1:
+                print('HEALTH_OK: {0}'.format(output.strip()))
+                return STATUS_OK
+            elif output.find('HEALTH_WARN') != -1:
+                print('HEALTH_WARN: {0}'.format(output.strip()), file=sys.stderr)
+                return STATUS_WARNING
+            elif output.find('HEALTH_ERR') != -1:
+                print('HEALTH_ERROR: {0}'.format(output.strip()), file=sys.stderr)
+                return STATUS_ERROR
+            else:
+				if not os.path.exists(self.cephconf):
+					print('ERROR: No such file - {0}'.format(self.cephconf), file=sys.stderr)
+					return STATUS_ERROR
+				else:
+					print('UNKNOWN: {0}'.format(output.strip()), file=sys.stderr)
+					return STATUS_UNKNOWN
+        elif err:
+            print('ERROR: {0}'.format(err.strip()), file=sys.stderr)
+            return STATUS_ERROR
+
 
 class CommonCephCommand(CephCommandBase):
 
@@ -372,6 +366,8 @@ def main():
     if hasattr(arguments, 'status'):
         # Common command
         ccmd = CommonCephCommand(arguments)
+        cephcmd = ccmd.build_common_command()
+        ccmd.run_ceph_command(cephcmd)
     elif hasattr(arguments, 'mon'):
         pass
     elif hasattr(arguments, 'osdstat'):
