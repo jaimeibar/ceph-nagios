@@ -198,8 +198,8 @@ class CephCommandBase(object):
     @property
     def name(self):
         """
-        Get name
-        :return: New name
+        Get client name for authentication
+        :return: Client name
         """
         # TODO-jim: Improve this doc
         return self._name
@@ -207,8 +207,8 @@ class CephCommandBase(object):
     @name.setter
     def name(self, newname):
         """
-        Set new name
-        :param newname: New name
+        Set new client name for authentication
+        :param newname: New client name
         """
         self._name = newname
 
