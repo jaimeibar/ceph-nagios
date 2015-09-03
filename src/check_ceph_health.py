@@ -217,34 +217,36 @@ class CephCommandBase(object):
         """
         Run ceph command
         :param command: Ceph command
-        :return: Ceph command output
+        :return: Nagios status code
         """
         try:
             runcmd = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
             output, err = runcmd.communicate()
         except OSError as error:
             print('ERROR: {0} - {1}'.format(error.strerror, self.cephexec), file=sys.stderr)
-            return STATUS_ERROR
+            nagioscode = STATUS_ERROR
         if output:
             if output.find('HEALTH_OK') != -1:
                 print('HEALTH_OK: {0}'.format(output.strip()))
-                return STATUS_OK
+                nagioscode = STATUS_OK
             elif output.find('HEALTH_WARN') != -1:
                 print('HEALTH_WARN: {0}'.format(output.strip()), file=sys.stderr)
-                return STATUS_WARNING
+                nagioscode = STATUS_WARNING
             elif output.find('HEALTH_ERR') != -1:
                 print('HEALTH_ERROR: {0}'.format(output.strip()), file=sys.stderr)
-                return STATUS_ERROR
+                nagioscode = STATUS_ERROR
             else:
-				if not os.path.exists(self.cephconf):
-					print('ERROR: No such file - {0}'.format(self.cephconf), file=sys.stderr)
-					return STATUS_ERROR
-				else:
-					print('UNKNOWN: {0}'.format(output.strip()), file=sys.stderr)
-					return STATUS_UNKNOWN
+                if not os.path.exists(self.cephconf):
+                    print('ERROR: No such file - {0}'.format(self.cephconf), file=sys.stderr)
+                    nagioscode = STATUS_ERROR
+                else:
+                    print('UNKNOWN: {0}'.format(output.strip()), file=sys.stderr)
+                    nagioscode = STATUS_UNKNOWN
         elif err:
             print('ERROR: {0}'.format(err.strip()), file=sys.stderr)
-            return STATUS_ERROR
+            nagioscode = STATUS_ERROR
+
+        return nagioscode
 
 
 class CommonCephCommand(CephCommandBase):
@@ -312,45 +314,6 @@ class MdsCephCommand(CephCommandBase):
         self._cmd = cmd
         self._mdsstat = kwargs.get('mdsstat')
         super(MdsCephCommand, self).__init__(**kwargs)
-
-
-def compose_command(arguments):
-    """
-    Compose ceph command from command line arguments
-    :param arguments: Command line arguments
-    :return: Ceph command or False in case of missing params
-    """
-    cmd = list()
-    cephcmd = arguments.exe if arguments.exe is not None else CEPH_COMMAND
-    altconf = arguments.conf if arguments.conf is not None else CEPH_CONFIG
-    monaddress = arguments.monaddress
-    clientid = arguments.id
-    clientname = arguments.name
-    keyring = arguments.keyring
-    status = arguments.status
-    health = arguments.health
-    if not status and not health:
-        return False
-    if check_file_exist(cephcmd):
-        cmd.append(cephcmd)
-    if check_file_exist(altconf):
-        cmd.append('-c')
-        cmd.append(altconf)
-    if monaddress is not None:
-        cmd.append('-m')
-        cmd.append(monaddress)
-    if clientid is not None:
-        cmd.append('--id')
-        cmd.append(clientid)
-    if clientname is not None:
-        cmd.append('--name')
-        cmd.append(clientname)
-    if keyring is not None and check_file_exist(keyring):
-        cmd.append('--keyring')
-        cmd.append(keyring)
-    extra = 'status' if status else 'health'
-    cmd.append(extra)
-    return cmd
 
 
 def main():
