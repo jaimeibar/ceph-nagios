@@ -232,7 +232,7 @@ class CephCommandBase(object):
             runcmd = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
             output, err = runcmd.communicate()
         except OSError as error:
-            print('ERROR: {0} - {1}'.format(error.strerror, self.cephexec), file=sys.stderr)
+            self.nagiosmessage = 'ERROR: Ceph executable not found - {0}'.format(self.cephexec)
             return STATUS_ERROR
         if output:
             if output.find('HEALTH_OK') != -1:
