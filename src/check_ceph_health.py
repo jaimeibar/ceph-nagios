@@ -316,11 +316,18 @@ class CommonCephCommand(CephCommandBase):
 
 class MonCephCommand(CephCommandBase):
 
-    def __init__(self, cmd, **kwargs):
-        self._cmd = cmd
-        self._mon = kwargs.get('mon')
-        self._monstat = kwargs.get('monstat')
-        super(MonCephCommand, self).__init__(**kwargs)
+    def __init__(self, cliargs):
+        self._mon = getattr(cliargs, 'mon')
+        self._monstat = getattr(cliargs, 'monstat')
+        super(MonCephCommand, self).__init__(cliargs)
+
+    @property
+    def mon(self):
+        return self._mon
+
+    @property
+    def monstat(self):
+        return self._monstat
 
 
 class OsdCephCommand(CephCommandBase):
