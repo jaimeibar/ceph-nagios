@@ -192,10 +192,18 @@ class CephCommandBase(object):
 
     @property
     def nagiosmessage(self):
+        """
+        Get nagios message
+        :return: nagios message
+        """
         return self._nagiosmessage
 
     @nagiosmessage.setter
     def nagiosmessage(self, newmessage):
+        """
+        Set new nagios message
+        :param newmessage: New nagios message
+        """
         self._nagiosmessage = newmessage
 
     def build_base_command(self):
