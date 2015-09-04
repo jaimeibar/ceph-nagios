@@ -242,28 +242,29 @@ class CephCommandBase(object):
         except OSError as error:
             self.nagiosmessage = 'ERROR: Ceph executable not found - {0}'.format(self.cephexec)
             return STATUS_ERROR
+        output = output.strip()
         if output:
             if output.find('HEALTH_OK') != -1:
-                self.nagiosmessage = 'HEALTH_OK: {0}'.format(output.strip())
+                self.nagiosmessage = output
                 nagioscode = STATUS_OK
             elif output.find('HEALTH_WARN') != -1:
-                self.nagiosmessage = 'HEALTH_WARN: {0}'.format(output.strip())
+                self.nagiosmessage = output
                 nagioscode = STATUS_WARNING
             elif output.find('HEALTH_ERR') != -1:
-                self.nagiosmessage = 'HEALTH_ERROR: {0}'.format(output.strip())
+                self.nagiosmessage = output
                 nagioscode = STATUS_ERROR
             elif self.quorum:
-                self.nagiosmessage = 'QUORUM INFO: {0}'.format(output.strip())
+                self.nagiosmessage = output
                 nagioscode = STATUS_OK
             elif self.dfcmd:
-                self.nagiosmessage = 'POOLS INFO: {0}'.format(output.strip())
+                self.nagiosmessage = output
                 nagioscode = STATUS_OK
             else:
                 if not os.path.exists(self.cephconf):
                     self.nagiosmessage = 'ERROR: No such file - {0}'.format(self.cephconf)
                     nagioscode = STATUS_ERROR
                 else:
-                    self.nagiosmessage = 'UNKNOWN: {0}'.format(output.strip())
+                    self.nagiosmessage = 'UNKNOWN: {0}'.format(output)
                     nagioscode = STATUS_UNKNOWN
         elif err:
             self.nagiosmessage = 'ERROR: {0}'.format(err.strip())
