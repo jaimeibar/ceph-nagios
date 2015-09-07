@@ -9,6 +9,7 @@ import argparse
 import sys
 
 from cephnagios.check_ceph_health import CommonCephCommand
+from cephnagios.check_ceph_health import MonCephCommand
 from cephnagios import __version__
 
 # default ceph values
@@ -71,7 +72,10 @@ def main():
         cephcmd = ccmd.build_common_command()
         result = ccmd.run_ceph_command(cephcmd)
     elif hasattr(arguments, 'mon'):
-        pass
+        # Mon command
+        ccmd = MonCephCommand(arguments)
+        moncmd = ccmd.build_mon_command()
+        result = ccmd.run_ceph_command(moncmd)
     elif hasattr(arguments, 'osdstat'):
         pass
     elif hasattr(arguments, 'mdsstat'):
