@@ -280,6 +280,14 @@ class MonCephCommand(CephCommandBase):
     def monstat(self):
         return self._monstat
 
+    def build_mon_command(self):
+        cmd = self.build_base_command()
+        if self.mon:
+            cmd.append('mon_status')
+        elif self.monstat:
+            cmd.append('mon stat')
+        return cmd
+
 
 class OsdCephCommand(CephCommandBase):
 
