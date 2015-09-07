@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # Distributed under GNU/GPL 2 license
@@ -25,9 +24,11 @@ from __future__ import print_function
 import os
 import subprocess
 
-__version__ = '0.2'
-
-
+# nagios exit code
+STATUS_OK = 0
+STATUS_WARNING = 1
+STATUS_ERROR = 2
+STATUS_UNKNOWN = 3
 
 
 class CephCommandBase(object):
@@ -49,7 +50,7 @@ class CephCommandBase(object):
         Get ceph executable
         :return: ceph executable
         """
-        return self._cephexec or CEPH_COMMAND
+        return self._cephexec
 
     @cephexec.setter
     def cephexec(self, newcephexec):
@@ -65,7 +66,7 @@ class CephCommandBase(object):
         Get ceph config file
         :return: ceph config file
         """
-        return self._cephconf or CEPH_CONFIG
+        return self._cephconf
 
     @cephconf.setter
     def cephconf(self, newcephconf):
