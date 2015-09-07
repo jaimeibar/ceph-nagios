@@ -1,19 +1,19 @@
+# -*- coding: utf-8 -*-
+
+"""
+Command line
+"""
 
 
 import argparse
 import sys
 
 from cephnagios.check_ceph_health import CommonCephCommand
+from cephnagios import __version__
 
 # default ceph values
 CEPH_COMMAND = '/usr/bin/ceph'
 CEPH_CONFIG = '/etc/ceph/ceph.conf'
-
-# nagios exit code
-STATUS_OK = 0
-STATUS_WARNING = 1
-STATUS_ERROR = 2
-STATUS_UNKNOWN = 3
 
 
 def _parse_arguments():
@@ -64,7 +64,7 @@ def main():
     nargs = len(sys.argv[1:])
     if not nargs:
         parser.print_help()
-        return STATUS_ERROR
+        return 2
     arguments = parser.parse_args()
     if hasattr(arguments, 'status'):
         # Common command
