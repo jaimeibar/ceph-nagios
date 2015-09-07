@@ -211,21 +211,17 @@ class CephCommandBase(object):
             elif output.find('HEALTH_ERR') != -1:
                 self.nagiosmessage = output
                 nagioscode = STATUS_ERROR
-            elif self.quorum:
-                self.nagiosmessage = output
-                nagioscode = STATUS_OK
-            elif self.dfcmd:
-                self.nagiosmessage = output
-                nagioscode = STATUS_OK
             else:
                 if not os.path.exists(self.cephconf):
                     self.nagiosmessage = 'ERROR: No such file - {0}'.format(self.cephconf)
                     nagioscode = STATUS_ERROR
                 else:
-                    self.nagiosmessage = 'UNKNOWN: {0}'.format(output)
-                    nagioscode = STATUS_UNKNOWN
+                    self.nagiosmessage = 'OK: {0}'.format(output)
+                    nagioscode = STATUS_OK
         elif err:
             self.nagiosmessage = 'ERROR: {0}'.format(err.strip())
+            nagioscode = STATUS_ERROR
+        else:
             nagioscode = STATUS_ERROR
 
         return nagioscode
@@ -292,7 +288,8 @@ class MonCephCommand(CephCommandBase):
         if self.monstatus:
             cmd.append('mon_status')
         elif self.monstat:
-            cmd.append('mon stat')
+            cmd.append('mon')
+            cmd.append('stat')
         return cmd
 
 
