@@ -275,13 +275,13 @@ class CommonCephCommand(CephCommandBase):
 class MonCephCommand(CephCommandBase):
 
     def __init__(self, cliargs):
-        self._mon = getattr(cliargs, 'mon')
+        self._monstatus = getattr(cliargs, 'monstatus')
         self._monstat = getattr(cliargs, 'monstat')
         super(MonCephCommand, self).__init__(cliargs)
 
     @property
-    def mon(self):
-        return self._mon
+    def monstatus(self):
+        return self._monstatus
 
     @property
     def monstat(self):
@@ -289,7 +289,7 @@ class MonCephCommand(CephCommandBase):
 
     def build_mon_command(self):
         cmd = self.build_base_command()
-        if self.mon:
+        if self.monstatus:
             cmd.append('mon_status')
         elif self.monstat:
             cmd.append('mon stat')
@@ -337,7 +337,7 @@ def _parse_arguments():
 
     cephmonparser = subparsers.add_parser('mon', help='Ceph monitor options')
     cephmonparsergrp = cephmonparser.add_mutually_exclusive_group()
-    cephmonparsergrp.add_argument('--mon', action='store_true', help='Show ceph mon status')
+    cephmonparsergrp.add_argument('--monstatus', action='store_true', help='Show ceph mon status')
     cephmonparsergrp.add_argument('--monstat', action='store_true', help='Show Ceph mon stat')
 
     cephosdparser = subparsers.add_parser('osd', help='Ceph osd options')
