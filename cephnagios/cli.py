@@ -21,14 +21,13 @@ def _parse_arguments():
     Parse command line arguments
     :return: Command line arguments
     """
-    parser = argparse.ArgumentParser(description="'ceph health' nagios plugin.")
-    parser.add_argument('-e', '--exe', help='ceph executable [{0}]'.format(CEPH_COMMAND))
-    parser.add_argument('-c', '--conf', help='alternative ceph conf file [{0}]'.format(CEPH_CONFIG))
+    parser = argparse.ArgumentParser(description='ceph nagios plugin', version=__version__)
+    parser.add_argument('-e', '--exe', default=CEPH_COMMAND, help='ceph executable [{0}]'.format(CEPH_COMMAND))
+    parser.add_argument('-c', '--conf', default=CEPH_CONFIG, help='alternative ceph conf file [{0}]'.format(CEPH_CONFIG))
     parser.add_argument('-m', '--monaddress', help='ceph monitor address[:port]')
     parser.add_argument('-i', '--monid', help='ceph client id')
     parser.add_argument('-n', '--name', help='ceph client name')
     parser.add_argument('-k', '--keyring', help='ceph client keyring file')
-    parser.add_argument('-v', '--version', action='version', version=__version__, help='show version and exit')
 
     subparsers = parser.add_subparsers(help='Ceph commands options help')
 
