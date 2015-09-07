@@ -366,7 +366,7 @@ def main():
         ccmd = CommonCephCommand(arguments)
         cephcmd = ccmd.build_common_command()
         result = ccmd.run_ceph_command(cephcmd)
-    elif hasattr(arguments, 'mon'):
+    elif hasattr(arguments, 'monstatus'):
         # Mon command
         ccmd = MonCephCommand(arguments)
         moncmd = ccmd.build_mon_command()
