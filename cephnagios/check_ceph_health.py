@@ -198,7 +198,7 @@ class CephCommandBase(object):
         try:
             runcmd = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
             output, err = runcmd.communicate()
-        except OSError as error:
+        except OSError:
             self.nagiosmessage = 'ERROR: Ceph executable not found - {0}'.format(self.cephexec)
             return STATUS_ERROR
         output = output.strip()
@@ -232,7 +232,9 @@ class CephCommandBase(object):
 
 
 class CommonCephCommand(CephCommandBase):
-
+    """
+    Class for common command
+    """
     def __init__(self, cliargs):
         self._status = getattr(cliargs, 'status')
         self._health = getattr(cliargs, 'health')
@@ -242,21 +244,36 @@ class CommonCephCommand(CephCommandBase):
 
     @property
     def status(self):
+        """
+        :return: True if status is defined False otherwise
+        """
         return self._status
 
     @property
     def health(self):
+        """
+        :return: True if health is defined False otherwise
+        """
         return self._health
 
     @property
     def quorum(self):
+        """
+        :return: True if quorum is defined False otherwise
+        """
         return self._quorum
 
     @property
     def dfcmd(self):
+        """
+        :return: True if df is defined False otherwise
+        """
         return self._df
 
     def build_common_command(self):
+        """
+        :return: Ceph common command
+        """
         cmd = self.build_base_command()
         if self.status:
             cmd.append('status')
@@ -270,6 +287,9 @@ class CommonCephCommand(CephCommandBase):
 
 
 class MonCephCommand(CephCommandBase):
+    """
+    Class for mon command
+    """
 
     def __init__(self, cliargs):
         self._monstatus = getattr(cliargs, 'monstatus')
@@ -278,13 +298,22 @@ class MonCephCommand(CephCommandBase):
 
     @property
     def monstatus(self):
+        """
+        :return: True if monstatus is defined False otherwise
+        """
         return self._monstatus
 
     @property
     def monstat(self):
+        """
+        :return: True if monstat is defined False otherwise
+        """
         return self._monstat
 
     def build_mon_command(self):
+        """
+        :return: Ceph mon command
+        """
         cmd = self.build_base_command()
         if self.monstatus:
             cmd.append('mon_status')
@@ -295,6 +324,9 @@ class MonCephCommand(CephCommandBase):
 
 
 class OsdCephCommand(CephCommandBase):
+    """
+    Class for osd command
+    """
 
     def __init__(self, cliargs):
         self._osdstat = getattr(cliargs, 'stat')
@@ -303,13 +335,22 @@ class OsdCephCommand(CephCommandBase):
 
     @property
     def osdstat(self):
+        """
+        :return: True if osdstat is defined False otherwise
+        """
         return self._osdstat
 
     @property
     def osdtree(self):
+        """
+        :return: True if osdtree is defined False otherwise
+        """
         return self._osdtree
 
     def build_osd_command(self):
+        """
+        :return: Ceph osd command
+        """
         cmd = self.build_base_command()
         cmd.append('osd')
         if self.osdstat:
@@ -320,6 +361,9 @@ class OsdCephCommand(CephCommandBase):
 
 
 class MdsCephCommand(CephCommandBase):
+    """
+    Class for mds command
+    """
 
     def __init__(self, cliargs):
         self._mdsstat = getattr(cliargs, 'mdsstat')
@@ -327,9 +371,15 @@ class MdsCephCommand(CephCommandBase):
 
     @property
     def mdsstat(self):
+        """
+        :return: True if mdsstat is defined False otherwise
+        """
         return self._mdsstat
 
     def build_mds_command(self):
+        """
+        :return: Ceph mds command
+        """
         cmd = self.build_base_command()
         cmd.append('mds')
         cmd.append('stat')
@@ -400,6 +450,7 @@ def main():
         osdcmd = ccmd.build_osd_command()
         result = ccmd.run_ceph_command(osdcmd)
     elif hasattr(arguments, 'mdsstat'):
+        # Mds command
         ccmd = MdsCephCommand(arguments)
         mdscmd = ccmd.build_mds_command()
         result = ccmd.run_ceph_command(mdscmd)
