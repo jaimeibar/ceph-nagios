@@ -427,6 +427,7 @@ def _parse_arguments():
 def main():
     """
     Main function
+    :return: Nagios status code
     """
     parser = _parse_arguments()
     nargs = len(sys.argv[1:])
@@ -455,7 +456,8 @@ def main():
         mdscmd = ccmd.build_mds_command()
         result = ccmd.run_ceph_command(mdscmd)
     else:
-        pass
+        ccmd = 'No valid command found'
+        result = STATUS_ERROR
     print(ccmd)
     return result
 
