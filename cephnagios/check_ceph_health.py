@@ -38,6 +38,7 @@ CEPH_CONFIG = '/etc/ceph/ceph.conf'
 
 __version__ = '0.2'
 
+
 class CephCommandBase(object):
     """
     Base class
@@ -320,10 +321,19 @@ class OsdCephCommand(CephCommandBase):
 
 class MdsCephCommand(CephCommandBase):
 
-    def __init__(self, cmd, **kwargs):
-        self._cmd = cmd
-        self._mdsstat = kwargs.get('mdsstat')
-        super(MdsCephCommand, self).__init__(**kwargs)
+    def __init__(self, cliargs):
+        self._mdsstat = getattr(cliargs, 'mdsstat')
+        super(MdsCephCommand, self).__init__(cliargs)
+
+    @property
+    def mdsstat(self):
+        return self._mdsstat
+
+    def build_mds_command(self):
+        cmd = self.build_base_command()
+        cmd.append('mds')
+        cmd.append('stat')
+        return cmd
 
 
 def _parse_arguments():
@@ -390,7 +400,9 @@ def main():
         osdcmd = ccmd.build_osd_command()
         result = ccmd.run_ceph_command(osdcmd)
     elif hasattr(arguments, 'mdsstat'):
-        pass
+        ccmd = MdsCephCommand(arguments)
+        mdscmd = ccmd.build_mds_command()
+        result = ccmd.run_ceph_command(mdscmd)
     else:
         pass
     print(ccmd)
