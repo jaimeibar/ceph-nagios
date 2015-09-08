@@ -295,11 +295,24 @@ class MonCephCommand(CephCommandBase):
 
 class OsdCephCommand(CephCommandBase):
 
-    def __init__(self, cmd, **kwargs):
-        self._cmd = cmd
-        self._osdstat = kwargs.get('osdstat')
-        self._osdtree = kwargs.get('osdtree')
-        super(OsdCephCommand, self).__init__(**kwargs)
+    def __init__(self, cliargs):
+        self._osdstat = getattr(cliargs, 'osdstat')
+        self._osdtree = getattr(cliargs, 'osdtree')
+        super(OsdCephCommand, self).__init__(cliargs)
+
+    @property
+    def osdstat(self):
+        return self._osdstat
+
+    @property
+    def osdtree(self):
+        return self._osdtree
+
+    def build_osd_command(self):
+        cmd = self.build_base_command()
+        cmd.append('osd')
+        cmd.append(self.osdstat) or cmd.append(self.osdtree)
+        return cmd
 
 
 class MdsCephCommand(CephCommandBase):
@@ -369,7 +382,10 @@ def main():
         moncmd = ccmd.build_mon_command()
         result = ccmd.run_ceph_command(moncmd)
     elif hasattr(arguments, 'osdstat'):
-        pass
+        # Osd command
+        ccmd = OsdCephCommand(arguments)
+        osdcmd = ccmd.build_osd_command()
+        result = ccmd.run_ceph_command(osdcmd)
     elif hasattr(arguments, 'mdsstat'):
         pass
     else:
