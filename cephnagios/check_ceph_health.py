@@ -296,8 +296,8 @@ class MonCephCommand(CephCommandBase):
 class OsdCephCommand(CephCommandBase):
 
     def __init__(self, cliargs):
-        self._osdstat = getattr(cliargs, 'osdstat')
-        self._osdtree = getattr(cliargs, 'osdtree')
+        self._osdstat = getattr(cliargs, 'stat')
+        self._osdtree = getattr(cliargs, 'tree')
         super(OsdCephCommand, self).__init__(cliargs)
 
     @property
@@ -311,7 +311,10 @@ class OsdCephCommand(CephCommandBase):
     def build_osd_command(self):
         cmd = self.build_base_command()
         cmd.append('osd')
-        cmd.append(self.osdstat) or cmd.append(self.osdtree)
+        if self.osdstat:
+            cmd.append('stat')
+        else:
+            cmd.append('tree')
         return cmd
 
 
@@ -352,8 +355,8 @@ def _parse_arguments():
 
     cephosdparser = subparsers.add_parser('osd', help='Ceph osd options')
     cephosdparsergrp = cephosdparser.add_mutually_exclusive_group()
-    cephosdparsergrp.add_argument('--osdstat', action='store_true', help='Show ceph osd status')
-    cephosdparsergrp.add_argument('--osdtree', action='store_true', help='Show Ceph osd tree')
+    cephosdparsergrp.add_argument('--stat', action='store_true', help='Show ceph osd status')
+    cephosdparsergrp.add_argument('--tree', action='store_true', help='Show Ceph osd tree')
 
     cephmdsparser = subparsers.add_parser('mds', help='Ceph mds options')
     cephmdsparsergrp = cephmdsparser.add_mutually_exclusive_group()
@@ -381,7 +384,7 @@ def main():
         ccmd = MonCephCommand(arguments)
         moncmd = ccmd.build_mon_command()
         result = ccmd.run_ceph_command(moncmd)
-    elif hasattr(arguments, 'osdstat'):
+    elif hasattr(arguments, 'stat'):
         # Osd command
         ccmd = OsdCephCommand(arguments)
         osdcmd = ccmd.build_osd_command()
