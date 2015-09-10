@@ -293,9 +293,14 @@ class MonCephCommand(CephCommandBase):
     """
 
     def __init__(self, cliargs):
+        self._monhealth = getattr(cliargs, 'monhealthid')
         self._monstatus = getattr(cliargs, 'monstatus')
         self._monstat = getattr(cliargs, 'monstat')
         super(MonCephCommand, self).__init__(cliargs)
+
+    @property
+    def monhealth(self):
+        return self._monhealth
 
     @property
     def monstatus(self):
@@ -316,11 +321,14 @@ class MonCephCommand(CephCommandBase):
         :return: Ceph mon command
         """
         cmd = self.build_base_command()
-        if self.monstatus:
+        if self.monhealth:
+            newcmd = 'ping mon.{0}'.format(self.monhealth).split()
+            cmd.extend(newcmd)
+        elif self.monstatus:
             cmd.append('mon_status')
         elif self.monstat:
-            cmd.append('mon')
-            cmd.append('stat')
+            newcmd = 'mon stat'.split()
+            cmd.extend(newcmd)
         return cmd
 
 
@@ -411,7 +419,7 @@ def _parse_arguments():
 
     cephmonparser = subparsers.add_parser('mon', help='Ceph monitor options')
     cephmonparsergrp = cephmonparser.add_mutually_exclusive_group()
-    cephmonparsergrp.add_argument('--monhealth', dest='monid', help='Check mon health status')
+    cephmonparsergrp.add_argument('--monhealth', dest='monhealthid', help='Check mon health status')
     cephmonparsergrp.add_argument('--monstatus', action='store_true', help='Show ceph mon status')
     cephmonparsergrp.add_argument('--monstat', action='store_true', help='Show Ceph mon stat')
 
