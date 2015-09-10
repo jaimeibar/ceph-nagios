@@ -294,6 +294,10 @@ class MonCephCommand(CephCommandBase):
 
     @property
     def monhealth(self):
+        """
+        Get monhealth value
+        :return: monhealth value
+        """
         return self._monhealth
 
     @property
