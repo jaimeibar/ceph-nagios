@@ -123,7 +123,6 @@ class CephCommandBase(object):
         Get client name for authentication
         :return: Client name
         """
-        # TODO-jim: Improve this doc
         return self._name
 
     @name.setter
@@ -169,25 +168,20 @@ class CephCommandBase(object):
     def build_base_command(self):
         """
         Build base ceph command from common command line arguments
-        :return: Ceph command
+        :return: Ceph base command
         """
         basecmd = list()
         basecmd.append(self.cephexec)
         if self.cephconf is not None:
-            basecmd.append('-c')
-            basecmd.append(self.cephconf)
+            basecmd.extend('-c {0}'.format(self.cephconf).split())
         if self.monaddress is not None:
-            basecmd.append('-m')
-            basecmd.append(self.monaddress)
+            basecmd.extend('-m {0}'.format(self.monaddress).split())
         if self.monid is not None:
-            basecmd.append('--id')
-            basecmd.append(self.monid)
+            basecmd.extend('--id {0}'.format(self.monid).split())
         if self.name is not None:
-            basecmd.append('--name')
-            basecmd.append(self.name)
+            basecmd.extend('--name {0}'.format(self.name).split())
         if self.keyring is not None:
-            basecmd.append('--keyring')
-            basecmd.append(self.keyring)
+            basecmd.extend('--keyring {0}'.format(self.keyring).split())
         return basecmd
 
     def run_ceph_command(self, command):
