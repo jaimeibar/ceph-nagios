@@ -425,6 +425,7 @@ def _parse_arguments():
 
     return parser
 
+
 def main():
     """
     Main function
