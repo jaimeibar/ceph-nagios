@@ -384,8 +384,7 @@ class MdsCephCommand(CephCommandBase):
         :return: Ceph mds command
         """
         cmd = self.build_base_command()
-        cmd.append('mds')
-        cmd.append('stat')
+        cmd.extend('mds stat'.split())
         return cmd
 
 
