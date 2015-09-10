@@ -320,13 +320,11 @@ class MonCephCommand(CephCommandBase):
         """
         cmd = self.build_base_command()
         if self.monhealth:
-            newcmd = 'ping mon.{0}'.format(self.monhealth).split()
-            cmd.extend(newcmd)
+            cmd.extend('ping mon.{0}'.format(self.monhealth).split())
         elif self.monstatus:
             cmd.append('mon_status')
         elif self.monstat:
-            newcmd = 'mon stat'.split()
-            cmd.extend(newcmd)
+            cmd.extend('mon stat'.split())
         return cmd
 
 
