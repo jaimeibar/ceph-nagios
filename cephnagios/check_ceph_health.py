@@ -26,6 +26,7 @@ import os
 import subprocess
 import argparse
 import sys
+import json
 
 # nagios exit code
 STATUS_OK = 0
@@ -173,6 +174,9 @@ class CephCommandBase(object):
         basecmd = list()
         basecmd.append(self.cephexec)
         if self.cephconf is not None:
+            if not os.path.exists(self.cephconf):
+                self.nagiosmessage = 'ERROR: No such file - {0}'.format(self.cephconf)
+                sys.exit(STATUS_ERROR)
             basecmd.extend('-c {0}'.format(self.cephconf).split())
         if self.monaddress is not None:
             basecmd.extend('-m {0}'.format(self.monaddress).split())
@@ -188,39 +192,15 @@ class CephCommandBase(object):
         """
         Run ceph command
         :param command: Ceph command
-        :return: Nagios status code
+        :return: Ceph command output
         """
         try:
             runcmd = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
-            output, err = runcmd.communicate()
+            output, _ = runcmd.communicate()
         except OSError:
             self.nagiosmessage = 'ERROR: Ceph executable not found - {0}'.format(self.cephexec)
             return STATUS_ERROR
-        output = output.strip()
-        if output:
-            if output.find('HEALTH_OK') != -1:
-                self.nagiosmessage = output
-                nagioscode = STATUS_OK
-            elif output.find('HEALTH_WARN') != -1:
-                self.nagiosmessage = output
-                nagioscode = STATUS_WARNING
-            elif output.find('HEALTH_ERR') != -1:
-                self.nagiosmessage = output
-                nagioscode = STATUS_ERROR
-            else:
-                if not os.path.exists(self.cephconf):
-                    self.nagiosmessage = 'ERROR: No such file - {0}'.format(self.cephconf)
-                    nagioscode = STATUS_ERROR
-                else:
-                    self.nagiosmessage = 'OK: {0}'.format(output)
-                    nagioscode = STATUS_OK
-        elif err:
-            self.nagiosmessage = 'ERROR: {0}'.format(err.strip())
-            nagioscode = STATUS_ERROR
-        else:
-            nagioscode = STATUS_ERROR
-
-        return nagioscode
+        return output
 
     def __str__(self):
         return '{0}'.format(self.nagiosmessage)
@@ -430,6 +410,38 @@ def _parse_arguments():
     return parser
 
 
+def compose_nagios_output(output, cliargs):
+    """
+    Compose nagios message from ceph command output
+    :param output: Ceph command result
+    :param cliargs: Command line args
+    :return: Nagios code
+    """
+    monid = getattr(cliargs, 'monid')
+    if monid is not None:
+        jsondata = json.loads(output)
+        monsdata = jsondata['health']['health']['health_services'][0].get('mons')
+        if monsdata:
+            for mon in monsdata:
+                if monid in mon.values():
+                    nagiosmessage = mon.get('health')
+                    nagioscode = STATUS_OK
+    else:
+        if output.find('HEALTH_OK') != -1:
+            nagiosmessage = output
+            nagioscode = STATUS_OK
+        elif output.find('HEALTH_WARN') != -1:
+            nagiosmessage = output
+            nagioscode = STATUS_WARNING
+        elif output.find('HEALTH_ERR') != -1:
+            nagiosmessage = output
+            nagioscode = STATUS_ERROR
+        else:
+            nagiosmessage = 'OK: {0}'.format(output)
+            nagioscode = STATUS_OK
+    return nagiosmessage, nagioscode
+
+
 def main():
     """
     Main function
@@ -445,27 +457,26 @@ def main():
         # Common command
         ccmd = CommonCephCommand(arguments)
         cephcmd = ccmd.build_common_command()
-        result = ccmd.run_ceph_command(cephcmd)
     elif hasattr(arguments, 'monstatus'):
         # Mon command
         ccmd = MonCephCommand(arguments)
-        moncmd = ccmd.build_mon_command()
-        result = ccmd.run_ceph_command(moncmd)
+        cephcmd = ccmd.build_mon_command()
     elif hasattr(arguments, 'stat'):
         # Osd command
         ccmd = OsdCephCommand(arguments)
-        osdcmd = ccmd.build_osd_command()
-        result = ccmd.run_ceph_command(osdcmd)
+        cephcmd = ccmd.build_osd_command()
     elif hasattr(arguments, 'mdsstat'):
         # Mds command
         ccmd = MdsCephCommand(arguments)
-        mdscmd = ccmd.build_mds_command()
-        result = ccmd.run_ceph_command(mdscmd)
+        cephcmd = ccmd.build_mds_command()
     else:
-        ccmd = 'No valid command found'
-        result = STATUS_ERROR
-    print(ccmd)
-    return result
+        print('No valid command found')
+        return STATUS_ERROR
+    result = ccmd.run_ceph_command(cephcmd)
+    if result:
+        nagiosmsg, nagioscode = compose_nagios_output(result, arguments)
+        print(nagiosmsg)
+    return nagioscode
 
 
 if __name__ == "__main__":
