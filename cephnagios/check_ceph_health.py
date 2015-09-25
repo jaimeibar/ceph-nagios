@@ -199,7 +199,7 @@ class CephCommandBase(object):
             output, _ = runcmd.communicate()
         except OSError:
             self.nagiosmessage = 'ERROR: Ceph executable not found - {0}'.format(self.cephexec)
-            return STATUS_ERROR
+            sys.exit(STATUS_ERROR)
         return output
 
     def __str__(self):
