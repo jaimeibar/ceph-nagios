@@ -419,7 +419,7 @@ def compose_nagios_output(output, cliargs):
     :param cliargs: Command line args
     :return: Nagios code
     """
-    monid = getattr(cliargs, 'monid')
+    monid = getattr(cliargs, 'monhealthid')
     if monid is not None:
         jsondata = json.loads(output)
         monsdata = jsondata['health']['health']['health_services'][0].get('mons')
