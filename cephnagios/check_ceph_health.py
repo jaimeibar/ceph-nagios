@@ -38,7 +38,7 @@ STATUS_UNKNOWN = 3
 CEPH_COMMAND = '/usr/bin/ceph'
 CEPH_CONFIG = '/etc/ceph/ceph.conf'
 
-__version__ = '0.3'
+__version__ = '0.3.1'
 
 
 class CephCommandBase(object):
@@ -435,7 +435,14 @@ def compose_nagios_output(output, cliargs):
             for mon in monsdata:
                 if monid in mon.values():
                     nagiosmessage = mon.get('health')
+                    _, health = nagiosmessage.split('_')
                     nagioscode = STATUS_OK
+                    if health == 'WARNING':
+                        nagioscode = STATUS_WARNING
+                    elif health == 'ERROR':
+                        nagioscode = STATUS_ERROR
+                    elif health == 'UNKNOWN':
+                        nagioscode = STATUS_UNKNOWN
     else:
         if output.find('HEALTH_OK') != -1:
             nagiosmessage = output
