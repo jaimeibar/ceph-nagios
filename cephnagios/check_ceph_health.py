@@ -480,6 +480,7 @@ def main():
     result = ccmd.run_ceph_command(cephcmd)
     if result:
         nagiosmsg, nagioscode = compose_nagios_output(result, arguments)
+        print(nagiosmsg)
     return nagioscode
 
 
