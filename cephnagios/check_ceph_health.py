@@ -176,7 +176,7 @@ class CephCommandBase(object):
         if self.cephconf is not None:
             if not os.path.exists(self.cephconf):
                 self.nagiosmessage = 'ERROR: No such file - {0}'.format(self.cephconf)
-                sys.exit(STATUS_ERROR)
+                return False
             basecmd.extend('-c {0}'.format(self.cephconf).split())
         if self.monaddress is not None:
             basecmd.extend('-m {0}'.format(self.monaddress).split())
@@ -198,7 +198,7 @@ class CephCommandBase(object):
             runcmd = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
             output, _ = runcmd.communicate()
         except OSError:
-            self.nagiosmessage = 'ERROR: Ceph executable not found - {0}'.format(self.cephexec)
+            print('ERROR: Ceph executable not found - {0}'.format(self.cephexec))
             sys.exit(STATUS_ERROR)
         return output
 
@@ -250,6 +250,8 @@ class CommonCephCommand(CephCommandBase):
         :return: Ceph common command
         """
         cmd = self.build_base_command()
+        if not cmd:
+            return False
         if self.status:
             cmd.append('status')
         elif self.health:
@@ -472,10 +474,12 @@ def main():
     else:
         print('No valid command found')
         return STATUS_ERROR
+    if not cephcmd:
+        print(ccmd.nagiosmessage, file=sys.stderr)
+        return STATUS_ERROR
     result = ccmd.run_ceph_command(cephcmd)
     if result:
         nagiosmsg, nagioscode = compose_nagios_output(result, arguments)
-        print(nagiosmsg)
     return nagioscode
 
 
