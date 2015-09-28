@@ -421,7 +421,15 @@ def compose_nagios_output(output, cliargs):
     """
     monid = getattr(cliargs, 'monhealthid')
     if monid is not None:
-        jsondata = json.loads(output)
+        try:
+            jsondata = json.loads(output)
+        except ValueError:
+            if output.find('ObjectNotFound') != -1:
+                nagiosmessage = '{0} is not a valid ceph mon'.format(monid)
+                return nagiosmessage, STATUS_ERROR
+            else:
+                nagiosmessage = 'Unknown error'
+                return nagiosmessage, STATUS_UNKNOWN
         monsdata = jsondata['health']['health']['health_services'][0].get('mons')
         if monsdata:
             for mon in monsdata:
