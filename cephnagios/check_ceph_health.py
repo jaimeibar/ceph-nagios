@@ -269,7 +269,7 @@ class MonCephCommand(CephCommandBase):
     """
 
     def __init__(self, cliargs):
-        self._monhealth = getattr(cliargs, 'monhealthid')
+        self._monhealth = getattr(cliargs, 'monid')
         self._monstatus = getattr(cliargs, 'monstatus')
         self._monstat = getattr(cliargs, 'monstat')
         super(MonCephCommand, self).__init__(cliargs)
@@ -396,7 +396,7 @@ def _parse_arguments():
 
     cephmonparser = subparsers.add_parser('mon', help='Ceph monitor options')
     cephmonparsergrp = cephmonparser.add_mutually_exclusive_group()
-    cephmonparsergrp.add_argument('--monhealth', dest='monhealthid', help='Check mon health status')
+    cephmonparsergrp.add_argument('--monhealth', dest='monid', help='Check mon health status')
     cephmonparsergrp.add_argument('--monstatus', action='store_true', help='Show ceph mon status')
     cephmonparsergrp.add_argument('--monstat', action='store_true', help='Show Ceph mon stat')
 
@@ -419,7 +419,7 @@ def compose_nagios_output(output, cliargs):
     :param cliargs: Command line args
     :return: Nagios code
     """
-    monid = getattr(cliargs, 'monhealthid')
+    monid = getattr(cliargs, 'monid')
     if monid is not None:
         try:
             jsondata = json.loads(output)
