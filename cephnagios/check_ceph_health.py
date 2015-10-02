@@ -62,14 +62,6 @@ class CephCommandBase(object):
         """
         return self._cephexec
 
-    @cephexec.setter
-    def cephexec(self, newcephexec):
-        """
-        Set new ceph executable
-        :param newcephexec: New ceph executable
-        """
-        self._cephexec = newcephexec
-
     @property
     def cephconf(self):
         """
@@ -77,14 +69,6 @@ class CephCommandBase(object):
         :return: ceph config file
         """
         return self._cephconf
-
-    @cephconf.setter
-    def cephconf(self, newcephconf):
-        """
-        Set new ceph config file
-        :param newcephconf: New ceph config file
-        """
-        self._cephconf = newcephconf
 
     @property
     def monaddress(self):
@@ -94,14 +78,6 @@ class CephCommandBase(object):
         """
         return self._monaddress
 
-    @monaddress.setter
-    def monaddress(self, newmonaddress):
-        """
-        Set new mon address
-        :param newmonaddress: New mon address
-        """
-        self._monaddress = newmonaddress
-
     @property
     def monid(self):
         """
@@ -109,14 +85,6 @@ class CephCommandBase(object):
         :return: Mon id
         """
         return self._monid
-
-    @monid.setter
-    def monid(self, newmonid):
-        """
-        Set new mon id
-        :param newmonid: New mon id
-        """
-        self._monid = newmonid
 
     @property
     def name(self):
@@ -126,14 +94,6 @@ class CephCommandBase(object):
         """
         return self._name
 
-    @name.setter
-    def name(self, newname):
-        """
-        Set new client name for authentication
-        :param newname: New client name
-        """
-        self._name = newname
-
     @property
     def keyring(self):
         """
@@ -141,14 +101,6 @@ class CephCommandBase(object):
         :return: Keyring
         """
         return self._keyring
-
-    @keyring.setter
-    def keyring(self, newkeyring):
-        """
-        Set new keyring
-        :param newkeyring: New keyring
-        """
-        self._keyring = newkeyring
 
     @property
     def nagiosmessage(self):
