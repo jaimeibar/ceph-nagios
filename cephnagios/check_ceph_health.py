@@ -443,6 +443,9 @@ def compose_nagios_output(output, cliargs):
                         nagioscode = STATUS_ERROR
                     elif health == 'UNKNOWN':
                         nagioscode = STATUS_UNKNOWN
+        else:
+            nagiosmessage = 'No mons found'
+            nagioscode = STATUS_ERROR
     else:
         if output.find('HEALTH_OK') != -1:
             nagiosmessage = output
