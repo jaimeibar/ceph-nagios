@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # Distributed under GNU/GPL 2 license
@@ -21,7 +21,6 @@
 Ceph nagios plugins
 """
 
-from __future__ import print_function
 import os
 import subprocess
 import argparse
@@ -38,7 +37,7 @@ STATUS_UNKNOWN = 3
 CEPH_COMMAND = '/usr/bin/ceph'
 CEPH_CONFIG = '/etc/ceph/ceph.conf'
 
-__version__ = '0.3.2'
+__version__ = '0.4.0'
 
 
 class CephCommandBase(object):
@@ -329,13 +328,14 @@ def _parse_arguments():
     Parse command line arguments
     :return: Command line arguments
     """
-    parser = argparse.ArgumentParser(description='ceph nagios plugin', version=__version__)
+    parser = argparse.ArgumentParser(description='ceph nagios plugin')
     parser.add_argument('-e', '--exe', default=CEPH_COMMAND, help='ceph executable [{0}]'.format(CEPH_COMMAND))
     parser.add_argument('-c', '--conf', default=CEPH_CONFIG, help='alternative ceph conf file [{0}]'.format(CEPH_CONFIG))
     parser.add_argument('-m', '--monaddress', help='ceph monitor address[:port]')
     parser.add_argument('-i', '--monid', help='ceph client id')
     parser.add_argument('-n', '--name', help='ceph client name')
     parser.add_argument('-k', '--keyring', help='ceph client keyring file')
+    parser.add_argument('--version', action='version', version='%(prog)s {0}'.format(__version__))
 
     subparsers = parser.add_subparsers(help='Ceph commands options help')
 
