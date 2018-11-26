@@ -40,7 +40,7 @@ CEPH_CONFIG = '/etc/ceph/ceph.conf'
 __version__ = '0.4.0'
 
 
-class CephCommandBase(object):
+class CephCommandBase:
     """
     Base class
     """
@@ -146,12 +146,15 @@ class CephCommandBase(object):
         :return: Ceph command output
         """
         try:
-            runcmd = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
-            output, _ = runcmd.communicate()
+            runcmd = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=True)
+            rescmd = runcmd.stdout
         except OSError:
             print('ERROR: Ceph executable not found - {0}'.format(self.cephexec))
             sys.exit(STATUS_ERROR)
-        return output
+        except subprocess.CalledProcessError as error:
+            print('ERROR: {0}'.format(error))
+            sys.exit(STATUS_ERROR)
+        return rescmd
 
     def __str__(self):
         return '{0}'.format(self.nagiosmessage)
@@ -376,7 +379,7 @@ def compose_nagios_output(output, cliargs):
         try:
             jsondata = json.loads(output)
         except ValueError:
-            if output.find('ObjectNotFound') != -1:
+            if output.find(b'ObjectNotFound') != -1:
                 nagiosmessage = '{0} is not a valid ceph mon'.format(monid)
                 return nagiosmessage, STATUS_ERROR
             else:
@@ -399,13 +402,13 @@ def compose_nagios_output(output, cliargs):
             nagiosmessage = 'No mons found'
             nagioscode = STATUS_ERROR
     else:
-        if output.find('HEALTH_OK') != -1:
+        if output.find(b'HEALTH_OK') != -1:
             nagiosmessage = output
             nagioscode = STATUS_OK
-        elif output.find('HEALTH_WARN') != -1:
+        elif output.find(b'HEALTH_WARN') != -1:
             nagiosmessage = output
             nagioscode = STATUS_WARNING
-        elif output.find('HEALTH_ERR') != -1:
+        elif output.find(b'HEALTH_ERR') != -1:
             nagiosmessage = output
             nagioscode = STATUS_ERROR
         else:
@@ -450,7 +453,7 @@ def main():
     result = ccmd.run_ceph_command(cephcmd)
     if result:
         nagiosmsg, nagioscode = compose_nagios_output(result, arguments)
-        print(nagiosmsg)
+        print(nagiosmsg.decode())
     return nagioscode
 
 
