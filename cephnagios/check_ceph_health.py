@@ -147,7 +147,7 @@ class CephCommandBase:
         """
         try:
             runcmd = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=True)
-            rescmd = runcmd.stdout
+            rescmd = runcmd.stdout.decode()
         except OSError:
             print('ERROR: Ceph executable not found - {0}'.format(self.cephexec))
             sys.exit(STATUS_ERROR)
@@ -379,7 +379,7 @@ def compose_nagios_output(output, cliargs):
         try:
             jsondata = json.loads(output)
         except ValueError:
-            if output.find(b'ObjectNotFound') != -1:
+            if output.find('ObjectNotFound') != -1:
                 nagiosmessage = '{0} is not a valid ceph mon'.format(monid)
                 return nagiosmessage, STATUS_ERROR
             else:
@@ -402,13 +402,13 @@ def compose_nagios_output(output, cliargs):
             nagiosmessage = 'No mons found'
             nagioscode = STATUS_ERROR
     else:
-        if output.find(b'HEALTH_OK') != -1:
+        if output.find('HEALTH_OK') != -1:
             nagiosmessage = output
             nagioscode = STATUS_OK
-        elif output.find(b'HEALTH_WARN') != -1:
+        elif output.find('HEALTH_WARN') != -1:
             nagiosmessage = output
             nagioscode = STATUS_WARNING
-        elif output.find(b'HEALTH_ERR') != -1:
+        elif output.find('HEALTH_ERR') != -1:
             nagiosmessage = output
             nagioscode = STATUS_ERROR
         else:
@@ -453,7 +453,7 @@ def main():
     result = ccmd.run_ceph_command(cephcmd)
     if result:
         nagiosmsg, nagioscode = compose_nagios_output(result, arguments)
-        print(nagiosmsg.decode())
+        print(nagiosmsg)
     return nagioscode
 
 
