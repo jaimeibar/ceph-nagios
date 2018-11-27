@@ -1,6 +1,5 @@
 # ceph-nagios
 
-
 Tests for monitoring a Ceph cluster from Nagios
 
 Running tests are grouped in four sections.
@@ -10,7 +9,7 @@ Running tests are grouped in four sections.
     * quorum
     * df
   * mon
-    * monhealth MONID
+    * monhealth MONID (Deprecated since Luminous)
     * monstatus
     * monstat
   * osd
