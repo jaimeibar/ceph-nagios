@@ -37,7 +37,7 @@ STATUS_UNKNOWN = 3
 CEPH_COMMAND = '/usr/bin/ceph'
 CEPH_CONFIG = '/etc/ceph/ceph.conf'
 
-__version__ = '0.4.0'
+__version__ = '0.5.0'
 
 
 class CephCommandBase:
@@ -48,7 +48,7 @@ class CephCommandBase:
         self._cephexec = getattr(cliargs, 'exe')
         self._cephconf = getattr(cliargs, 'conf')
         self._monaddress = getattr(cliargs, 'monaddress')
-        self._monid = getattr(cliargs, 'monid')
+        self._clientid = getattr(cliargs, 'clientid')
         self._name = getattr(cliargs, 'name')
         self._keyring = getattr(cliargs, 'keyring')
         self._nagiosmessage = ''
@@ -78,12 +78,12 @@ class CephCommandBase:
         return self._monaddress
 
     @property
-    def monid(self):
+    def clientid(self):
         """
         Get mon id
         :return: Mon id
         """
-        return self._monid
+        return self._clientid
 
     @property
     def name(self):
@@ -126,13 +126,13 @@ class CephCommandBase:
         basecmd.append(self.cephexec)
         if self.cephconf is not None:
             if not os.path.exists(self.cephconf):
-                self.nagiosmessage = 'ERROR: No such file - {0}'.format(self.cephconf)
+                self._nagiosmessage = 'ERROR: No such file - {0}'.format(self.cephconf)
                 return False
             basecmd.extend('-c {0}'.format(self.cephconf).split())
         if self.monaddress is not None:
             basecmd.extend('-m {0}'.format(self.monaddress).split())
-        if self.monid is not None:
-            basecmd.extend('--id {0}'.format(self.monid).split())
+        if self.clientid is not None:
+            basecmd.extend('--id {0}'.format(self.clientid).split())
         if self.name is not None:
             basecmd.extend('--name {0}'.format(self.name).split())
         if self.keyring is not None:
@@ -152,7 +152,8 @@ class CephCommandBase:
             print('ERROR: Ceph executable not found - {0}'.format(self.cephexec))
             sys.exit(STATUS_ERROR)
         except subprocess.CalledProcessError as error:
-            print('ERROR: {0}'.format(error))
+            print('ERROR running ceph command: {0}'.format(error.output.decode()))
+            print('Ceph command: {0}'.format(command))
             sys.exit(STATUS_ERROR)
         return rescmd
 
@@ -335,7 +336,7 @@ def _parse_arguments():
     parser.add_argument('-e', '--exe', default=CEPH_COMMAND, help='ceph executable [{0}]'.format(CEPH_COMMAND))
     parser.add_argument('-c', '--conf', default=CEPH_CONFIG, help='alternative ceph conf file [{0}]'.format(CEPH_CONFIG))
     parser.add_argument('-m', '--monaddress', help='ceph monitor address[:port]')
-    parser.add_argument('-i', '--monid', help='ceph client id')
+    parser.add_argument('-i', '--user', dest='clientid', help='ceph client id')
     parser.add_argument('-n', '--name', help='ceph client name')
     parser.add_argument('-k', '--keyring', help='ceph client keyring file')
     parser.add_argument('--version', action='version', version='%(prog)s {0}'.format(__version__))
@@ -385,19 +386,17 @@ def compose_nagios_output(output, cliargs):
             else:
                 nagiosmessage = 'Unknown error'
                 return nagiosmessage, STATUS_UNKNOWN
-        monsdata = jsondata['health']['health']['health_services'][0].get('mons')
-        if monsdata:
-            for mon in monsdata:
-                if monid in mon.values():
-                    nagiosmessage = mon.get('health')
-                    _, health = nagiosmessage.split('_')
-                    nagioscode = STATUS_OK
-                    if health == 'WARNING':
-                        nagioscode = STATUS_WARNING
-                    elif health == 'ERROR':
-                        nagioscode = STATUS_ERROR
-                    elif health == 'UNKNOWN':
-                        nagioscode = STATUS_UNKNOWN
+        healthstatus = jsondata['health']['status']
+        if healthstatus:
+            _, health = healthstatus.split('_')
+            nagiosmessage = healthstatus
+            nagioscode = STATUS_OK
+            if health == 'WARNING':
+                nagioscode = STATUS_WARNING
+            elif health == 'ERROR':
+                nagioscode = STATUS_ERROR
+            elif health == 'UNKNOWN':
+                nagioscode = STATUS_UNKNOWN
         else:
             nagiosmessage = 'No mons found'
             nagioscode = STATUS_ERROR
