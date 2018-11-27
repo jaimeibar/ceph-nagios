@@ -375,7 +375,7 @@ def compose_nagios_output(output, cliargs):
     :param cliargs: Command line args
     :return: Nagios code
     """
-    monid = getattr(cliargs, 'monid')
+    monid = getattr(cliargs, 'monid', None)
     if monid is not None:
         try:
             jsondata = json.loads(output)
