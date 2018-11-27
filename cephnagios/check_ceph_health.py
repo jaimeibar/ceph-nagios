@@ -37,7 +37,7 @@ STATUS_UNKNOWN = 3
 CEPH_COMMAND = '/usr/bin/ceph'
 CEPH_CONFIG = '/etc/ceph/ceph.conf'
 
-__version__ = '0.5.0'
+__version__ = '0.5.1'
 
 
 class CephCommandBase:
